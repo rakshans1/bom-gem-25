@@ -1,0 +1,29 @@
+name: "CI"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - name: Run flakes check
+        run: |
+          nix flake check
+          nix develop -c echo OK
+      - name: Run tests
+        run: |
+          nix develop -c elixir --version
+          nix develop -c mix hex.info
