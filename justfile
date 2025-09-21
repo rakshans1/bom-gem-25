@@ -1,0 +1,149 @@
+# Note: dotenv-load disabled to prevent conflicts with ./bin/env
+# All env loading is handled explicitly via ./bin/env script
+set dotenv-load := false
+set shell := ["bash", "-Eeuo", "pipefail", "-c"]
+
+
+# Variables
+app_name := env_var_or_default("APP_NAME", "gem")
+mix_env := env_var_or_default("MIX_ENV", "dev")
+
+export GIT_REVISION := `git rev-parse --short=12 HEAD 2>/dev/null | { read commit; if git diff --staged --quiet 2>/dev/null; then echo "$commit"; else echo "$commit-$(git diff --staged 2>/dev/null | sha256sum | cut -c1-8)"; fi; } || date +%s`
+
+default:
+    @just --list --unsorted
+
+# Initialize project (first-time setup)
+init:
+    @echo "🚀 Initializing project..."
+    @direnv allow || true
+    @just deps
+    # @just db-setup
+    @echo "✅ Project initialized!"
+
+# =============================================================================
+# DEVELOPMENT
+# =============================================================================
+# Start development environment
+server:
+    #!/usr/bin/env bash
+    set -e
+    if [ ! -d deps ]; then
+        echo "Dependencies not installed; running 'just deps' first..."
+        just deps
+    fi
+    if [ ! -d node_modules ]; then
+        echo "Node modules not installed; running 'pnpm install' first..."
+        pnpm install
+    fi
+    echo "🚀 Starting Development Server"
+    eval "$(./bin/env --overload -e .env.dev -e .env.dev.local)"
+    iex --name "$APP_NAME" --cookie "$APP_NAME" -S mix phx.server
+
+# =============================================================================
+# DEPENDENCIES
+# =============================================================================
+# Install all dependencies
+deps:
+    @echo "📦 Installing dependencies..."
+    @direnv allow || true
+    @pnpm install
+    mix deps.get
+    @mix deps.compile
+    @if [ "${CI:-}" != "true" ]; then just _livebook-setup; fi
+
+# CI-specific dependency installation
+ci-setup:
+    @mix local.rebar --force
+    @mix local.hex --force
+    @pnpm install
+    @mix deps.get
+    @mix deps.compile
+
+# =============================================================================
+# DATABASE OPERATIONS
+# =============================================================================
+# Create database
+db-create:
+    #!/usr/bin/env bash
+    set -e
+    eval "$(./bin/env --overload -e .env.dev -e .env.dev.local)"
+    mix ecto.create
+
+# Generate new migration
+db-gen-migration name:
+    #!/usr/bin/env bash
+    set -e
+    eval "$(./bin/env --overload -e .env.dev -e .env.dev.local)"
+    mix ecto.gen.migration {{name}}
+
+# Run migrations
+db-migrate:
+    #!/usr/bin/env bash
+    set -e
+    eval "$(./bin/env --overload -e .env.dev -e .env.dev.local)"
+    mix ecto.migrate
+
+# Rollback migration
+db-rollback *args:
+    #!/usr/bin/env bash
+    set -e
+    eval "$(./bin/env --overload -e .env.dev -e .env.dev.local)"
+    mix ecto.rollback {{args}}
+
+# Reset development database
+dev-reset:
+    #!/usr/bin/env bash
+    set -e
+    eval "$(./bin/env --overload -e .env.dev -e .env.dev.local)"
+    mix ecto.drop
+    mix ecto.create
+    mix ecto.migrate
+    echo "✅ Development database reset"
+
+# Reset test database
+test-reset:
+    #!/usr/bin/env bash
+    set -e
+    if [ -n "$CI" ]; then
+        eval "$(./bin/env -e .env.test)"
+    else
+        eval "$(./bin/env --overload -e .env.test -e .env.test.local)"
+    fi
+    MIX_ENV=test mix ecto.drop
+    MIX_ENV=test mix ecto.create
+    MIX_ENV=test mix ecto.migrate
+    echo "✅ Test database reset"
+
+# =============================================================================
+# LIVEBOOK
+# =============================================================================
+
+# Start Livebook server
+livebook:
+    #!/usr/bin/env bash
+    set -e
+    eval "$(./bin/env --overload -e .env.dev -e .env.dev.local)"
+    export LIVEBOOK_HOME="$(pwd)/livebooks"
+    export LIVEBOOK_DATA_PATH="$(pwd)/.livebook"
+    export LIVEBOOK_TOKEN_ENABLED=false
+    export LIVEBOOK_COOKIE="$APP_NAME"
+    export LIVEBOOK_DEFAULT_RUNTIME="attached:$APP_NAME@$(hostname):$APP_NAME"
+    export LIVEBOOK_IFRAME_PORT=9055
+
+    if [[ $(uname) == "Darwin" ]] && [[ $(uname -m) == 'arm64' ]]; then
+        export EXLA_FLAGS=--config=macos_arm64
+    fi
+
+    livebook server -p 9054
+
+# Setup livebook
+livebook-setup:
+    @just _livebook-setup
+
+# =============================================================================
+# PRIVATE HELPERS (prefix with underscore)
+# =============================================================================
+_livebook-setup:
+    @mix escript.install hex livebook 0.14.5 --force
+    @mkdir -p "$(pwd)/.livebook"

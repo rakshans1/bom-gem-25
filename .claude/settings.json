@@ -1,0 +1,29 @@
+{
+	"permissions": {
+		"allow": [
+			"WebFetch(domain:hex.pm)",
+			"WebFetch(domain:hexdocs.pm)",
+			"WebFetch(domain:npmjs.com)",
+			"WebFetch(domain:github.com)",
+			"Bash(git:*)",
+			"Bash(just:*)",
+			"Bash(mix:*)",
+			"Bash(iex:*)",
+			"WebSearch",
+			"Edit(**)",
+			"Bash(nix flake:*)",
+			"Bash(nix build:*)",
+			"mcp__browsermcp",
+			"mcp__tidewave",
+			"mcp__shadcn"
+		],
+		"deny": ["Bash(rm:-rf)"]
+	},
+	"enableAllProjectMcpServers": true,
+	"enabledMcpjsonServers": ["tidewave"],
+	"includeCoAuthoredBy": false,
+	"cleanupPeriodDays": 30,
+	"env": {
+		"CLAUDE_CODE_ENABLE_TELEMETRY": "0"
+	}
+}

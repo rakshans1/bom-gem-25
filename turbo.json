@@ -1,0 +1,24 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"tasks": {
+		"build": {
+			"inputs": [
+				"src/**/*.{ts,tsx,js,jsx,css}",
+				"*.config.{ts,js}",
+				"package.json"
+			],
+			"outputs": ["../../priv/static/**"]
+		},
+		"clean": {
+			"cache": false
+		},
+		"lint": {
+			"dependsOn": ["^build"]
+		},
+		"fix": {
+			"dependsOn": ["^build"],
+			"cache": false
+		}
+	}
+}
+

@@ -1,4 +1,6 @@
-# Elixir Starter
+# Mumbai Global Elixir Meetup (GEM)
+
+[https://globalelixirmeetups.com/event/mumbai-global-elixir-meetup](https://globalelixirmeetups.com/event/mumbai-global-elixir-meetup)
 
 ## 🏗️ Prerequisites
 
@@ -8,23 +10,3 @@
 Setup direnv with [shell](https://direnv.net/docs/hook.html)
 
 Run `direnv allow`
-
-```
-Elixir: 1.18.1
-OTP:    27
-```
-
-`nix flake show https://github.com/rakshans1/elixir-starter`
-
-```
-github:rakshans1/elixir-starter/0acf13f351f2de2c44eb0690c9824f8ac3776ad1
-└───devShells
-    ├───aarch64-darwin
-    │   └───default: development environment 'nix-shell'
-    ├───aarch64-linux
-    │   └───default: development environment 'nix-shell'
-    ├───x86_64-darwin
-    │   └───default: development environment 'nix-shell'
-    └───x86_64-linux
-        └───default: development environment 'nix-shell'
-```
