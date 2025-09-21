@@ -7,6 +7,9 @@ import Config
 # any compile-time configuration in here, as it won't be applied.
 # The block below contains prod specific runtime configuration.
 
+config :gem,
+  app_env: System.get_env("APP_ENV")
+
 # ## Using releases
 #
 # If you use `mix release`, you need to explicitly enable the server

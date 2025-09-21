@@ -1,6 +1,7 @@
 {
 	"name": "elixir-gem-mum-workspace",
 	"private": true,
+	"packageManager": "pnpm@9.15.9",
 	"workspaces": [
 		"apps/*"
 	],

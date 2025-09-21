@@ -29,11 +29,8 @@ defmodule Gem.MixProject do
   # cookie is not sensitive and has no security issues
   defp releases do
     [
-      copilot: [
-        applications: [
-          fun_with_flags: :load,
-          fun_with_flags_ui: :load
-        ],
+      gem: [
+        applications: [],
         include_executables_for: [:unix],
         cookie: "pkF4ZJWBgar79+/y/I9QfGR8hEhDQljEa6AUIYLTNiQ1lFvvwrRIGJtWjsXlJnJS"
       ]
@@ -100,6 +97,9 @@ defmodule Gem.MixProject do
       # Clustering
       {:dns_cluster, "~> 0.2.0"},
 
+      # AI
+      {:tidewave, "~> 0.5.0", only: :dev},
+
       # Linting
       {:credo, "~> 1.7.12", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
@@ -122,7 +122,7 @@ defmodule Gem.MixProject do
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["compile", "tailwind gem", "esbuild gem"],
       "assets.deploy": [
-        "cmd trubo run build",
+        "cmd turbo run build",
         "tailwind gem --minify",
         "esbuild gem --minify",
         "phx.digest"
