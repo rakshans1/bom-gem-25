@@ -1,16 +1,16 @@
 import { defineConfig } from "vite";
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig({
 	plugins: [
 		viteStaticCopy({
 			targets: [
 				{
-					src: 'src/slides/*.md',
-					dest: '.'
-				}
-			]
-		})
+					src: "src/slides/*.md",
+					dest: ".",
+				},
+			],
+		}),
 	],
 	build: {
 		outDir: "../../priv/static/slides",

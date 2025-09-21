@@ -142,6 +142,75 @@ livebook-setup:
     @just _livebook-setup
 
 # =============================================================================
+# QUALITY CHECKS (Read-only)
+# =============================================================================
+# IMPORTANT: Check commands must NEVER modify state (no installs, no mutations)
+# They should fail fast with helpful messages if dependencies are missing
+
+# Run all quality checks (read-only, excludes tests which are separate)
+lint: check
+check: check-fast
+
+# Run fast quality checks (no tests, no installs, no mutations)
+check-fast:
+    @command -v mix >/dev/null || (echo "mix not found; run 'just init' first" && exit 1)
+    @test -d deps || (echo "deps missing; run 'just deps' first" && exit 1)
+    @test -d node_modules || (echo "node_modules missing; run 'pnpm install' first" && exit 1)
+    @echo "🔍 Running quality checks..."
+    @just check-format
+    @just check-lint
+    @just check-types-fast
+    @echo "✅ All quality checks passed!"
+
+# Check formatting across all languages
+# Excludes all generated artifacts: node_modules, build outputs, static assets, caches
+check-format:
+    @echo "📝 Checking formatting..."
+    @mix format --check-formatted --dry-run
+    @echo "Checking Biome format (excluding Tailwind CSS v4 file)..."
+    @biome check assets/js/ assets/vendor/ apps/ || echo "Note: Some Tailwind CSS v4 syntax not yet supported by Biome"
+
+check-lint:
+    @echo "🔍 Checking linting..."
+    @mix compile --warnings-as-errors --force
+    @mix credo --strict --min-priority normal
+    @echo "Checking Biome lint (excluding Tailwind CSS v4 file)..."
+    @biome lint assets/js/ assets/vendor/ apps/ || echo "Note: Some Tailwind CSS v4 syntax not yet supported by Biome"
+
+check-types:
+    @echo "🔍 Checking types..."
+    @mix dialyzer
+    @cd apps/slides && pnpm exec tsc --noEmit
+
+check-types-fast:
+    @echo "🔍 Checking TypeScript types..."
+    @cd apps/slides && pnpm exec tsc --noEmit
+
+# =============================================================================
+# FIXES (Mutations)
+# =============================================================================
+
+# Auto-fix all fixable issues
+fix:
+    @echo "🔧 Auto-fixing issues..."
+    @just fix-format
+    @just fix-lint
+    @echo "✅ Auto-fixes complete!"
+
+# Fix formatting across all languages
+# Excludes all generated artifacts to avoid touching build outputs
+fix-format:
+    @echo "📝 Fixing formatting..."
+    @mix format
+    @biome format --write assets/js/ assets/vendor/ apps/ || echo "Note: Some Tailwind CSS v4 syntax not yet supported by Biome"
+    @nixfmt-classic flake.nix 2>/dev/null || true
+
+fix-lint:
+    @echo "🔍 Fixing linting..."
+    @mix credo --strict --fix 2>/dev/null || true
+    @biome lint --write --unsafe assets/js/ assets/vendor/ apps/ || echo "Note: Some Tailwind CSS v4 syntax not yet supported by Biome"
+
+# =============================================================================
 # PRIVATE HELPERS (prefix with underscore)
 # =============================================================================
 _livebook-setup:

@@ -23,10 +23,11 @@ defmodule GemWeb do
     quote do
       use Phoenix.Router, helpers: false
 
-      # Import common connection and controller functions to use in pipelines
-      import Plug.Conn
       import Phoenix.Controller
       import Phoenix.LiveView.Router
+
+      # Import common connection and controller functions to use in pipelines
+      import Plug.Conn
     end
   end
 
@@ -39,7 +40,6 @@ defmodule GemWeb do
   def controller do
     quote do
       use Phoenix.Controller, formats: [:html, :json]
-
       use Gettext, backend: GemWeb.Gettext
 
       import Plug.Conn
@@ -82,14 +82,15 @@ defmodule GemWeb do
       # Translation
       use Gettext, backend: GemWeb.Gettext
 
+      import GemWeb.CoreComponents
+
       # HTML escaping functionality
       import Phoenix.HTML
       # Core UI components
-      import GemWeb.CoreComponents
+      alias GemWeb.Layouts
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS
-      alias GemWeb.Layouts
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

@@ -19,15 +19,15 @@ defmodule GemWeb.ConnCase do
 
   using do
     quote do
+      use GemWeb, :verified_routes
+
+      import GemWeb.ConnCase
+      import Phoenix.ConnTest
+      import Plug.Conn
       # The default endpoint for testing
       @endpoint GemWeb.Endpoint
 
-      use GemWeb, :verified_routes
-
       # Import conveniences for testing with connections
-      import Plug.Conn
-      import Phoenix.ConnTest
-      import GemWeb.ConnCase
     end
   end
 

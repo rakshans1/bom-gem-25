@@ -256,20 +256,157 @@ pnpm --filter slides build
 
 ### Plugins
 - Markdown: Parse markdown content
-- Notes: Speaker notes support
-- Highlight: Code syntax highlighting (can be added)
+- Notes: Speaker notes support with dedicated presenter view
+- Highlight: Code syntax highlighting
 
 ### Configuration
 Reveal.js is configured in `src/main.js`:
 
 ```javascript
 const deck = new Reveal({
-  hash: true,           // URL hash navigation
-  controls: true,       // Show navigation controls
-  progress: true,       // Show progress bar
-  center: true,         // Center slides vertically
-  transition: 'slide',  // Transition style
-  plugins: [Markdown],  // Enabled plugins
+  hash: true,                    // URL hash navigation
+  controls: true,                // Show navigation controls
+  progress: true,                // Show progress bar
+  center: true,                  // Center slides vertically
+  transition: 'slide',           // Transition style
+  plugins: [Markdown, Highlight, Notes],  // Enabled plugins
+});
+```
+
+## Speaker Notes
+
+The slides app includes full speaker notes support powered by Reveal.js Notes plugin. Speaker notes provide a dedicated presenter view with additional information not visible to the audience.
+
+### Using Speaker Notes
+
+#### In Markdown Files
+
+Add speaker notes using the `Note:` prefix in your markdown slides:
+
+```markdown
+# Slide Title
+
+Content visible to audience
+
+Note: These are speaker notes only visible in presenter view. You can include:
+- Talking points and reminders
+- Additional context and explanations
+- Timing information
+- Transitions between slides
+```
+
+#### Multiple Notes Per Slide
+
+You can add multiple note sections throughout a slide:
+
+```markdown
+# Complex Topic
+
+First point about the topic
+
+Note: Explain this concept slowly, it's complex
+
+## Second Point
+
+More content here
+
+Note: Share the personal anecdote about this topic
+Note: Remember to ask for questions before moving on
+```
+
+### Accessing Speaker Notes
+
+#### Opening Presenter View
+
+1. **Keyboard shortcut**: Press `S` key while viewing slides
+2. **URL method**: Add `?showNotes=true` to any slide URL
+3. **Separate window**: Press `S` to open presenter view in new window
+
+#### Presenter View Features
+
+The presenter view shows:
+
+- **Current slide**: What audience sees
+- **Next slide**: Preview of upcoming slide
+- **Speaker notes**: All notes for current slide
+- **Timer**: Elapsed time since presentation started
+- **Slide counter**: Current position (e.g., "5 / 20")
+- **Navigation controls**: Move between slides
+
+#### Best Practices
+
+**Writing Effective Notes:**
+- Keep notes concise and scannable
+- Use bullet points for quick reference
+- Include timing estimates (e.g., "spend 2 minutes on this")
+- Add transition cues between slides
+- Include audience interaction prompts
+
+**During Presentations:**
+- Open presenter view before starting
+- Position presenter window on laptop screen
+- Project main slides to audience display
+- Practice with the dual-screen setup beforehand
+
+**Example Note Structure:**
+```markdown
+# Introduction to Phoenix LiveView
+
+Phoenix LiveView enables rich, interactive web applications without writing JavaScript.
+
+Note:
+- Start with show of hands: "Who has used Phoenix?"
+- Mention this will be a 30-minute overview
+- Highlight that we'll build a live demo
+- Timing: 3 minutes for this intro section
+```
+
+### Technical Details
+
+#### URL Parameters
+
+- `?showNotes=true`: Force show speaker notes
+- `?showNotes=false`: Force hide speaker notes
+- `?showNotes=separate-page`: Open notes in separate window
+
+#### Synchronization
+
+- Presenter view automatically syncs with main presentation
+- Navigation in either window updates both views
+- Timer starts when first slide is displayed
+- Multiple presenter windows stay synchronized
+
+#### Browser Support
+
+Speaker notes work in all modern browsers:
+- Chrome/Chromium (recommended for dual-screen setups)
+- Firefox
+- Safari
+- Edge
+
+#### Security Considerations
+
+- Speaker notes are included in the built HTML
+- Notes are hidden via CSS in normal view
+- Consider sensitive information before including in notes
+- Use separate private notes document for confidential content
+
+### Troubleshooting
+
+**Common Issues:**
+
+1. **Notes not appearing**: Verify Notes plugin is loaded in `main.js`
+2. **Presenter view won't open**: Check browser popup blocking settings
+3. **Slides not syncing**: Refresh both presenter and main windows
+4. **Markdown notes not parsing**: Ensure proper `Note:` prefix formatting
+
+**Debug Mode:**
+
+Add to Reveal.js config for debugging:
+```javascript
+const deck = new Reveal({
+  // ... other options
+  showNotes: true,  // Force show notes in main view
 });
 ```
 
