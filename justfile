@@ -142,6 +142,22 @@ livebook-setup:
     @just _livebook-setup
 
 # =============================================================================
+# TESTING
+# =============================================================================
+
+# Run tests
+test:
+    #!/usr/bin/env bash
+    set -e
+    if [ -n "$CI" ]; then
+        eval "$(./bin/env -e .env.test)"
+    else
+        eval "$(./bin/env --overload -e .env.test -e .env.test.local)"
+    fi
+    echo "🧪 Running tests..."
+    MIX_ENV=test mix test
+
+# =============================================================================
 # QUALITY CHECKS (Read-only)
 # =============================================================================
 # IMPORTANT: Check commands must NEVER modify state (no installs, no mutations)
