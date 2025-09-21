@@ -43,7 +43,7 @@ defmodule Gem.MixProject do
   def application do
     [
       mod: {Gem.Application, []},
-      extra_applications: [:logger, :runtime_tools, :wx, :observer, :os_mon]
+      extra_applications: [:logger, :runtime_tools, :os_mon]
     ]
   end
 
