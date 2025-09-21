@@ -1,0 +1,47 @@
+# fly.toml app configuration file generated for bom-gem on 2025-09-21T22:44:46+05:30
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'bom-gem'
+primary_region = 'sin'
+kill_signal = 'SIGTERM'
+
+[build]
+
+[env]
+  DATABASE_PATH = '/data/gem_data/gem_prod.db'
+  PHX_HOST = 'bom-gem.fly.dev'
+  PORT = '8080'
+  SHELL = '/bin/bash'
+
+[[mounts]]
+  source = 'gem_data'
+  destination = '/data'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = 'connections'
+    hard_limit = 1000
+    soft_limit = 1000
+
+[checks]
+  [checks.status]
+    port = 8080
+    type = 'http'
+    interval = '15s'
+    timeout = '10s'
+    grace_period = '30s'
+    method = 'GET'
+    path = '/api/status'
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

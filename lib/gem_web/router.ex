@@ -23,9 +23,11 @@ defmodule GemWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", GemWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", GemWeb do
+    pipe_through :api
+
+    get "/status", StatusController, :index
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:gem, :dev_routes) do
