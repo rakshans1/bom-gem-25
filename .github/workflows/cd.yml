@@ -1,22 +1,23 @@
-name: "CD"
+# DISABLED: CD workflow temporarily disabled
+# name: "CD"
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches:
+#       - main
 
-concurrency:
-  group: autodeploy-stage
+# concurrency:
+#   group: autodeploy-stage
 
-env:
-  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+# env:
+#   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-jobs:
-  deploy:
-    name: deploy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only --build-arg CLOUD_VENDOR=FLY --build-arg GIT_SHA=$(git rev-parse HEAD) --build-arg GIT_AUTHOR="$(git show -s --format='%an' HEAD)" --depot=false
+# jobs:
+#   deploy:
+#     name: deploy
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v5
+#       - uses: superfly/flyctl-actions/setup-flyctl@master
+#       - run: flyctl deploy --remote-only --build-arg CLOUD_VENDOR=FLY --build-arg GIT_SHA=$(git rev-parse HEAD) --build-arg GIT_AUTHOR="$(git show -s --format='%an' HEAD)" --depot=false
