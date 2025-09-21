@@ -1,0 +1,7 @@
+gem.localhost {
+	reverse_proxy :9053
+}
+
+lb.gem.localhost {
+	reverse_proxy :9054
+}

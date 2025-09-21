@@ -1,0 +1,22 @@
+{
+	"name": "slides",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"build:watch": "vite build --watch",
+		"clean": "rm -rf ../../priv/static/slides",
+		"check": "pnpm exec tsc --noEmit && biome check && biome lint",
+		"fix": "biome lint --write && biome format --write"
+	},
+	"dependencies": {
+		"highlight.js": "^11.11.1",
+		"reveal.js": "^5.1.0"
+	},
+	"devDependencies": {
+		"@types/reveal.js": "^5.2.0",
+		"vite": "^6.0.1",
+		"vite-plugin-static-copy": "^3.1.2"
+	}
+}
