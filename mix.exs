@@ -10,8 +10,33 @@ defmodule Gem.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
+      releases: releases(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      dialyzer: [
+        plt_core_path: "priv/plts",
+        plt_local_path: "priv/plts",
+        plt_add_apps: [:ex_unit, :mix],
+        plt_add_deps: :app_tree,
+        list_unused_filters: true,
+        ignore_warnings: ".dialyzer_ignore.exs"
+      ]
+    ]
+  end
+
+  # Configuration releases with static erlang cookie
+  #
+  # cookie is not sensitive and has no security issues
+  defp releases do
+    [
+      copilot: [
+        applications: [
+          fun_with_flags: :load,
+          fun_with_flags_ui: :load
+        ],
+        include_executables_for: [:unix],
+        cookie: "pkF4ZJWBgar79+/y/I9QfGR8hEhDQljEa6AUIYLTNiQ1lFvvwrRIGJtWjsXlJnJS"
+      ]
     ]
   end
 
@@ -21,7 +46,7 @@ defmodule Gem.MixProject do
   def application do
     [
       mod: {Gem.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :wx, :observer, :os_mon]
     ]
   end
 
@@ -40,10 +65,9 @@ defmodule Gem.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      # Phoenix
       {:phoenix, "~> 1.8.1"},
       {:phoenix_ecto, "~> 4.5"},
-      {:ecto_sql, "~> 3.13"},
-      {:ecto_sqlite3, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},
@@ -52,20 +76,34 @@ defmodule Gem.MixProject do
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:heroicons,
-       github: "tailwindlabs/heroicons",
-       tag: "v2.2.0",
-       sparse: "optimized",
-       app: false,
-       compile: false,
-       depth: 1},
+       github: "tailwindlabs/heroicons", tag: "v2.2.0", sparse: "optimized", app: false, compile: false, depth: 1},
+      {:jason, "~> 1.2"},
+
+      # HTTP server
+      {:bandit, "~> 1.5"},
+
+      # Database
+      {:ecto_sql, "~> 3.13"},
+      {:ecto_sqlite3, ">= 0.0.0"},
+
+      # Email
       {:swoosh, "~> 1.16"},
+      {:gettext, "~> 0.26"},
+
+      # Request
       {:req, "~> 0.5"},
+
+      # Traces
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.26"},
-      {:jason, "~> 1.2"},
+
+      # Clustering
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+
+      # Linting
+      {:credo, "~> 1.7.12", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
+      {:styler, "~> 1.8", only: [:dev, :test], runtime: false}
     ]
   end
 
@@ -84,6 +122,7 @@ defmodule Gem.MixProject do
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["compile", "tailwind gem", "esbuild gem"],
       "assets.deploy": [
+        "cmd trubo run build",
         "tailwind gem --minify",
         "esbuild gem --minify",
         "phx.digest"

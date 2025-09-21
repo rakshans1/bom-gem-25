@@ -1,5 +1,8 @@
 import Config
 
+# In test we don't send emails
+config :gem, Gem.Mailer, adapter: Swoosh.Adapters.Test
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -17,12 +20,6 @@ config :gem, GemWeb.Endpoint,
   secret_key_base: "tYgT2U2jyGAJQZncc68djI4x/qlNsR8VDPyWzEHGobcu8yhniwjwRW+6MgbDEhOe",
   server: false
 
-# In test we don't send emails
-config :gem, Gem.Mailer, adapter: Swoosh.Adapters.Test
-
-# Disable swoosh api client as it is only required for production adapters
-config :swoosh, :api_client, false
-
 # Print only warnings and errors during test
 config :logger, level: :warning
 
@@ -32,3 +29,6 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+# Disable swoosh api client as it is only required for production adapters
+config :swoosh, :api_client, false

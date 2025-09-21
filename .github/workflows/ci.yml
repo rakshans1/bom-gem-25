@@ -8,22 +8,165 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  MIX_ENV: test
+
 jobs:
-  tests:
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, macos-latest]
-    runs-on: ${{ matrix.os }}
+  dependencies:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
+
+      - name: Install Nix
+        uses: nixbuild/nix-quick-install-action@v33
+      - uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-${{ runner.arch }}
+      - run: nix develop -c echo OK
+
+      - name: set elixir and otp version
+        id: hex-info
+        shell: bash
+        run: |
+          ELIXIR_VERSION=$(nix develop -c mix hex.info | sed -n 2p  | awk '{print $2}')
+          OTP_VERSION=$(nix develop -c mix hex.info | sed -n 3p  | awk '{print $2}')
+          echo Elixir: $ELIXIR_VERSION
+          echo OTP: $OTP_VERSION
+          echo "otp-version=$OTP_VERSION" >> $GITHUB_OUTPUT
+          echo "elixir-version=$ELIXIR_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Retrieve Mix Dependencies Cache
+        uses: actions/cache@v3
+        id: mix-cache
+        with:
+          path: |
+            .nix-hex
+            .nix-mix
+            deps
+            _build
+          key: ${{ runner.os }}-${{ steps.hex-info.outputs.otp-version }}-${{ steps.hex-info.outputs.elixir-version }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+
+      - name: Install Mix Dependencies
+        if: steps.mix-cache.outputs.cache-hit != 'true'
+        run: |
+          nix develop -c mix local.rebar --force
+          nix develop -c mix local.hex --force
+          nix develop -c just ci-setup
+
+  lint:
+    needs: dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
       - uses: DeterminateSystems/magic-nix-cache-action@v2
-      - name: Run flakes check
+      - run: nix develop -c echo OK
+
+      - name: set elixir and otp version
+        id: hex-info
+        shell: bash
         run: |
-          nix flake check
-          nix develop -c echo OK
-      - name: Run tests
+          ELIXIR_VERSION=$(nix develop -c mix hex.info | sed -n 2p  | awk '{print $2}')
+          OTP_VERSION=$(nix develop -c mix hex.info | sed -n 3p  | awk '{print $2}')
+          echo Elixir: $ELIXIR_VERSION
+          echo OTP: $OTP_VERSION
+          echo "otp-version=$OTP_VERSION" >> $GITHUB_OUTPUT
+          echo "elixir-version=$ELIXIR_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Retrieve Mix Dependencies Cache
+        uses: actions/cache@v3
+        id: mix-cache
+        with:
+          path: |
+            .nix-hex
+            .nix-mix
+            deps
+            _build
+          key: ${{ runner.os }}-${{ steps.hex-info.outputs.otp-version }}-${{ steps.hex-info.outputs.elixir-version }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+
+      - name: Check Formatting
+        run: nix develop -c just check-format
+
+      - name: Restore PLT cache
+        uses: actions/cache/restore@v3
+        id: plt_cache
+        with:
+          key: |
+            ${{ runner.os }}-${{ steps.hex-info.outputs.elixir-version }}-${{ steps.hex-info.outputs.otp-version }}-plt
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.hex-info.outputs.elixir-version }}-${{ steps.hex-info.outputs.otp-version }}-plt
+          path: |
+            priv/plts
+      # Create PLTs if no cache was found
+      - name: Create PLTs
+        if: steps.plt_cache.outputs.cache-hit != 'true'
         run: |
-          nix develop -c elixir --version
-          nix develop -c mix hex.info
+          mkdir -p priv/plts
+          nix develop -c mix dialyzer --plt
+      - name: Save PLT cache
+        uses: actions/cache/save@v3
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        id: plt_cache_save
+        with:
+          key: |
+            ${{ runner.os }}-${{ steps.hex-info.outputs.elixir-version }}-${{ steps.hex-info.outputs.otp-version }}-plt
+          path: |
+            priv/plts
+
+      - name: Run credo & dialyzer
+        run: |
+          nix develop -c mix local.rebar --force
+          nix develop -c mix local.hex --force
+          nix develop -c just check-lint
+          nix develop -c just check-types
+
+  test:
+    needs: dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - run: nix develop -c echo OK
+
+      - name: set elixir and otp version
+        id: hex-info
+        shell: bash
+        run: |
+          ELIXIR_VERSION=$(nix develop -c mix hex.info | sed -n 2p  | awk '{print $2}')
+          OTP_VERSION=$(nix develop -c mix hex.info | sed -n 3p  | awk '{print $2}')
+          echo Elixir: $ELIXIR_VERSION
+          echo OTP: $OTP_VERSION
+          echo "otp-version=$OTP_VERSION" >> $GITHUB_OUTPUT
+          echo "elixir-version=$ELIXIR_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Retrieve Mix Dependencies Cache
+        uses: actions/cache@v3
+        id: mix-cache
+        with:
+          path: |
+            .nix-hex
+            .nix-mix
+            deps
+            _build
+          key: ${{ runner.os }}-${{ steps.hex-info.outputs.otp-version }}-${{ steps.hex-info.outputs.elixir-version }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+
+      - name: Install Mix Dependencies
+        if: steps.mix-cache.outputs.cache-hit != 'true'
+        run: |
+          nix develop -c just ci-setup
+
+      - name: Run Tests
+        run: |
+          export SECRET_KEY_BASE=$(nix develop -c mix phx.gen.secret | tail -1)
+          nix develop -c just test-reset
+          nix develop -c just test

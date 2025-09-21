@@ -7,14 +7,14 @@ import Config
 # before starting your production server.
 config :gem, GemWeb.Endpoint, cache_static_manifest: "priv/static/cache_manifest.json"
 
-# Configures Swoosh API Client
-config :swoosh, api_client: Swoosh.ApiClient.Req
-
-# Disable Swoosh Local Memory Storage
-config :swoosh, local: false
-
 # Do not print debug messages in production
 config :logger, level: :info
 
+# Configures Swoosh API Client
+config :swoosh, api_client: Swoosh.ApiClient.Req
+
 # Runtime production configuration, including reading
+
+# Disable Swoosh Local Memory Storage
 # of environment variables, is done on config/runtime.exs.
+config :swoosh, local: false

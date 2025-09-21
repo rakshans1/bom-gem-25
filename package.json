@@ -1,20 +1,20 @@
 {
-  "name": "elixir-gem-mum-workspace",
-  "private": true,
-  "workspaces": [
-    "apps/*"
-  ],
-  "scripts": {
-    "build": "turbo run build",
-    "clean": "turbo run clean && rm -rf node_modules",
-    "lint": "turbo run lint",
-    "fix": "turbo run fix"
-  },
-  "devDependencies": {
-    "turbo": "^2.5.6"
-  },
-  "engines": {
-    "node": ">=22",
-    "pnpm": ">=9"
-  }
+	"name": "elixir-gem-mum-workspace",
+	"private": true,
+	"workspaces": [
+		"apps/*"
+	],
+	"scripts": {
+		"build": "turbo run build",
+		"clean": "turbo run clean && rm -rf node_modules",
+		"lint": "turbo run lint",
+		"fix": "turbo run fix"
+	},
+	"devDependencies": {
+		"turbo": "^2.5.6"
+	},
+	"engines": {
+		"node": ">=22",
+		"pnpm": ">=9"
+	}
 }
