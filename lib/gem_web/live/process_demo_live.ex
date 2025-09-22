@@ -111,6 +111,10 @@ defmodule GemWeb.ProcessDemoLive do
     |> String.reverse()
   end
 
+  defp format_seconds(ms) when is_integer(ms) do
+    Float.round(ms / 1000, 2)
+  end
+
   defp get_processes_spawned(progress, total_count) do
     round(progress * total_count / 100)
   end
@@ -241,18 +245,18 @@ defmodule GemWeb.ProcessDemoLive do
                   processes
                 </p>
                 <p>
-                  ⚡ Total execution time:
-                  <span style="font-family: 'Fira Code', monospace; color: #b4be82;">
-                    {@execution_time}ms
-                  </span>
-                </p>
-                <p>
-                  🚀 Average:
-                  <span style="font-family: 'Fira Code', monospace; color: #84a0c6;">
-                    {Float.round(@process_count / @execution_time, 2)}
-                  </span>
-                  processes per millisecond
-                </p>
+                ⚡ Total execution time:
+                <span style="font-family: 'Fira Code', monospace; color: #b4be82;">
+                  {format_seconds(@execution_time)}s
+                </span>
+              </p>
+              <p>
+                🚀 Average:
+                <span style="font-family: 'Fira Code', monospace; color: #84a0c6;">
+                  {Float.round(@process_count * 1000 / max(@execution_time, 1), 2)}
+                </span>
+                processes per second
+              </p>
               </div>
             </div>
           </div>
