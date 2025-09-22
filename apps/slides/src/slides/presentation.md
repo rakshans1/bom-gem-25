@@ -20,11 +20,13 @@ Note: Before we dive into impressive numbers, let's establish what Elixir actual
 
 ## Key Characteristics
 
-- Built on the **Erlang Virtual Machine (BEAM)** - 30+ years of battle-testing
-- **Functional programming** with immutable data structures
-- **Actor model** with lightweight processes (not OS threads)
-- **"Let it crash" philosophy** - embrace failures and recover gracefully
-- **Built-in distribution** - designed for multi-node systems from day one
+<ul>
+<li class="fragment" data-fragment-index="1">Built on the <strong>Erlang Virtual Machine (BEAM)</strong> - 30+ years of battle-testing</li>
+<li class="fragment" data-fragment-index="2"><strong>Functional programming</strong> with immutable data structures</li>
+<li class="fragment" data-fragment-index="3"><strong>Actor model</strong> with lightweight processes (not OS threads)</li>
+<li class="fragment" data-fragment-index="4"><strong>"Let it crash" philosophy</strong> - embrace failures and recover gracefully</li>
+<li class="fragment" data-fragment-index="5"><strong>Built-in distribution</strong> - designed for multi-node systems from day one</li>
+</ul>
 
 --
 
@@ -80,9 +82,11 @@ end
 
 <!-- Slide 2.5 -->
 
-- **Polymorphism** via protocols
-- **Meta-programming** with macros
-- And more...
+<ul>
+<li class="fragment" data-fragment-index="1"><strong>Polymorphism</strong> via protocols</li>
+<li class="fragment" data-fragment-index="2"><strong>Meta-programming</strong> with macros</li>
+<li class="fragment" data-fragment-index="3">And more...</li>
+</ul>
 
 --
 
@@ -108,11 +112,13 @@ In Erlang VM, all code runs inside lightweight threads called **processes**. We 
 
 ## Concurrency Features
 
-- **Actor Model** - Isolated processes communicate via messages
-- **Lightweight processes** - Millions of processes, not OS threads
-- **Preemptive scheduling** - Fair resource allocation
-- **Message passing** - No shared state, no race conditions
-- **Fault isolation** - Process crashes don't affect others
+<ul>
+<li class="fragment" data-fragment-index="1"><strong>Actor Model</strong> - Isolated processes communicate via messages</li>
+<li class="fragment" data-fragment-index="2"><strong>Lightweight processes</strong> - Millions of processes, not OS threads</li>
+<li class="fragment" data-fragment-index="3"><strong>Preemptive scheduling</strong> - Fair resource allocation</li>
+<li class="fragment" data-fragment-index="4"><strong>Message passing</strong> - No shared state, no race conditions</li>
+<li class="fragment" data-fragment-index="5"><strong>Fault isolation</strong> - Process crashes don't affect others</li>
+</ul>
 
 ---
 
