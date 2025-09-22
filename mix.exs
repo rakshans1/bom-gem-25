@@ -18,8 +18,7 @@ defmodule Gem.MixProject do
         plt_local_path: "priv/plts",
         plt_add_apps: [:ex_unit, :mix],
         plt_add_deps: :app_tree,
-        list_unused_filters: true,
-        ignore_warnings: ".dialyzer_ignore.exs"
+        list_unused_filters: true
       ]
     ]
   end
