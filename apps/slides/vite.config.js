@@ -10,6 +10,9 @@ export default defineConfig({
 					dest: ".",
 				},
 			],
+			watch: {
+				reloadPageOnChange: true,
+			},
 		}),
 	],
 	build: {
@@ -24,4 +27,9 @@ export default defineConfig({
 		},
 	},
 	base: "/slides/",
+	server: {
+		watch: {
+			include: ["src/**/*"],
+		},
+	},
 });
