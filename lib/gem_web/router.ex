@@ -20,6 +20,7 @@ defmodule GemWeb.Router do
     get "/", PageController, :home
     get "/slides", SlidesController, :app
     get "/slides/*path", SlidesController, :app
+    live "/demo/processes", ProcessDemoLive
   end
 
   # Other scopes may use custom stacks.

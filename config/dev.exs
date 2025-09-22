@@ -56,8 +56,10 @@ config :gem, GemWeb.Endpoint,
     web_console_logger: true,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/static/slides/.*(html|md|js|css)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/gem_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$"
+      ~r"lib/gem_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$",
+      ~r"apps/slides/src/slides/.*(md)$"
     ]
   ]
 
