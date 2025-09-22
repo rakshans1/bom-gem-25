@@ -245,18 +245,18 @@ defmodule GemWeb.ProcessDemoLive do
                   processes
                 </p>
                 <p>
-                ⚡ Total execution time:
-                <span style="font-family: 'Fira Code', monospace; color: #b4be82;">
-                  {format_seconds(@execution_time)}s
-                </span>
-              </p>
-              <p>
-                🚀 Average:
-                <span style="font-family: 'Fira Code', monospace; color: #84a0c6;">
-                  {Float.round(@process_count * 1000 / max(@execution_time, 1), 2)}
-                </span>
-                processes per second
-              </p>
+                  ⚡ Total execution time:
+                  <span style="font-family: 'Fira Code', monospace; color: #b4be82;">
+                    {format_seconds(@execution_time)}s
+                  </span>
+                </p>
+                <p>
+                  🚀 Average:
+                  <span style="font-family: 'Fira Code', monospace; color: #84a0c6;">
+                    {Float.round(@process_count * 1000 / max(@execution_time, 1), 2)}
+                  </span>
+                  processes per second
+                </p>
               </div>
             </div>
           </div>
