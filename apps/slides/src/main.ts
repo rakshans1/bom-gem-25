@@ -15,6 +15,15 @@ const config: Options = {
 	center: true,
 	transition: "slide",
 	plugins: [Markdown, Highlight, Notes],
+	markdown: {
+		smartypants: true,
+		// Configure markdown-it to handle emojis properly
+		markdownOptions: {
+			html: true,
+			linkify: true,
+			typographer: true,
+		},
+	},
 };
 
 const deck = new Reveal(config);

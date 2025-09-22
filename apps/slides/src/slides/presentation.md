@@ -1,8 +1,118 @@
+<!-- Slide 1 -->
+
 # Bet on Elixir
 
-**Why Elixir might be the best technical decision you make this year**
+Note: Welcome everyone. I'm here to sell you on Elixir and convince you to learn it. This isn't just another programming language presentation.
 
-Note: Welcome everyone. Today I want to convince you that learning Elixir is worth your investment. This isn't just another programming language - it's a game changer.
+---
+
+<!-- Slide 2 -->
+
+## What is Elixir?
+
+**Elixir is a dynamic programming language designed for building scalable, fault-tolerant applications**
+
+Note: Before we dive into impressive numbers, let's establish what Elixir actually is. It's not just another web framework - it's a completely different approach to building software.
+
+--
+
+<!-- Slide 2.1 -->
+
+## Key Characteristics
+
+- Built on the **Erlang Virtual Machine (BEAM)** - 30+ years of battle-testing
+- **Functional programming** with immutable data structures
+- **Actor model** with lightweight processes (not OS threads)
+- **"Let it crash" philosophy** - embrace failures and recover gracefully
+- **Built-in distribution** - designed for multi-node systems from day one
+
+--
+
+<!-- Slide 2.2 -->
+
+## Functional ƛ
+
+```elixir
+"Elixir is cool!"
+|> String.split(" ")
+|> List.last()
+|> String.replace_suffix("!", "")
+|> String.upcase()
+```
+
+--
+
+<!-- Slide 2.3 -->
+
+## Immutable 🔒
+
+```elixir
+user = %{name: "Alice", status: :inactive}
+new_user = %{user | status: :active}
+# Original user remains unchanged
+```
+
+--
+
+<!-- Slide 2.4 -->
+
+## Pattern Matching ⚡
+
+```elixir
+case fetch_user(id) do
+  {:ok, %User{role: :admin}} -> "Admin access granted"
+  {:ok, %User{role: :user}} -> "User access granted"
+  {:error, :not_found} -> "User not found"
+  _ -> "Access denied"
+end
+
+with {:ok, user} <- fetch_user(id),
+     {:ok, account} <- fetch_account(user.id),
+     true <- account.active? do
+  {:ok, "Welcome #{user.name}!"}
+else
+  {:error, reason} -> {:error, reason}
+  false -> {:error, "Account inactive"}
+end
+```
+
+--
+
+<!-- Slide 2.5 -->
+
+- **Polymorphism** via protocols
+- **Meta-programming** with macros
+- And more...
+
+--
+
+<!-- Slide 2.6 -->
+
+## Concurrency 🧵
+
+In Erlang VM, all code runs inside lightweight threads called **processes**. We can literally create millions of them.
+
+--
+
+<!-- Slide 2.7 -->
+
+<iframe data-src="/demo/processes"
+        data-lazy
+        width="100%"
+        height="650"
+        frameborder="0"
+        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
+</iframe>
+
+--
+
+## Concurrency Features
+
+- **Actor Model** - Isolated processes communicate via messages
+- **Lightweight processes** - Millions of processes, not OS threads
+- **Preemptive scheduling** - Fair resource allocation
+- **Message passing** - No shared state, no race conditions
+- **Fault isolation** - Process crashes don't affect others
 
 ---
 
@@ -110,20 +220,6 @@ end
 ```
 
 Note: This is the fundamental mindset shift. Instead of trying to prevent all errors, we design systems that recover gracefully when things go wrong.
-
----
-
-## Lightweight Processes
-
---
-
-<iframe data-src="/demo/processes"
-        data-lazy
-        width="100%"
-        height="650"
-        frameborder="0"
-        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
-</iframe>
 
 ---
 
@@ -338,4 +434,3 @@ Questions about Elixir?
 - Elixir Forum community
 
 Note: Thank you for your attention. I'm happy to answer any questions about Elixir, and I encourage you to try building something small this week. You might be surprised by how quickly you become productive.
-

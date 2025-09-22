@@ -5,16 +5,18 @@
 
 /* Import a base theme as foundation (optional) */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap");
 
 /* GLOBAL STYLES - Iceberg Theme Colors */
 :root {
 	--r-background-color: #161821;
-	--r-main-font: "Inter", sans-serif;
+	--r-main-font: "Inter", "Noto Color Emoji", sans-serif;
 	--r-main-font-size: 40px;
 	--r-main-color: #c6c8d1;
 	--r-block-margin: 20px;
 	--r-heading-margin: 0 0 20px 0;
-	--r-heading-font: "Inter", sans-serif;
+	--r-heading-font: "Inter", "Noto Color Emoji", sans-serif;
 	--r-heading-color: #d2d4de;
 	--r-heading-line-height: 1.2;
 	--r-heading-letter-spacing: normal;
@@ -325,6 +327,7 @@
 }
 
 .hljs-string,
+.hljs-subst,
 .hljs-attr {
 	color: var(--iceberg-green);
 }
@@ -366,4 +369,45 @@
 
 .hljs-strong {
 	font-weight: bold;
+}
+
+/* EMOJI SUPPORT */
+.reveal {
+	font-feature-settings:
+		"liga" 1,
+		"kern" 1;
+	text-rendering: optimizeLegibility;
+}
+
+/* Force all Unicode emoji characters to use color emoji fonts */
+.reveal *:not(code):not(pre):not(span):not(.hljs) {
+	font-family: var(--r-main-font);
+	font-variant-emoji: emoji;
+}
+
+/* Ensure code blocks use Fira Code exclusively */
+.reveal pre,
+.reveal code,
+.reveal pre code,
+.reveal .hljs {
+	font-family: var(--r-code-font) !important;
+	font-variant-emoji: none;
+}
+
+/* Specific emoji selectors for better targeting */
+.reveal .emoji,
+.reveal span[data-emoji],
+.reveal [class*="emoji"] {
+	font-family:
+		"Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+		sans-serif !important;
+	font-size: 1.2em;
+	vertical-align: -0.1em;
+}
+
+/* Target specific Unicode ranges for emojis */
+.reveal *:is([data-contains-emoji], :has(> .emoji)) {
+	font-family:
+		var(--r-main-font), "Noto Color Emoji", "Apple Color Emoji",
+		"Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
 }
