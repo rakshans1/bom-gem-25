@@ -73,6 +73,30 @@ defmodule GemWeb.Layouts do
   end
 
   @doc """
+  Minimal, full-screen layout for demo pages without header.
+
+  Use for immersive demos that need the whole viewport.
+
+  ## Examples
+
+      <Layouts.demo flash={@flash}>
+        <h1>Demo</h1>
+      </Layouts.demo>
+  """
+  attr :flash, :map, required: true
+  attr :current_scope, :map, default: nil
+  slot :inner_block, required: true
+
+  def demo(assigns) do
+    ~H"""
+    <main class="min-h-svh w-svw">
+      {render_slot(@inner_block)}
+    </main>
+    <.flash_group flash={@flash} />
+    """
+  end
+
+  @doc """
   Shows the flash group with standard titles and content.
 
   ## Examples
