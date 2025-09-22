@@ -372,42 +372,10 @@
 }
 
 /* EMOJI SUPPORT */
-.reveal {
-	font-feature-settings:
-		"liga" 1,
-		"kern" 1;
-	text-rendering: optimizeLegibility;
-}
-
-/* Force all Unicode emoji characters to use color emoji fonts */
-.reveal *:not(code):not(pre):not(span):not(.hljs) {
-	font-family: var(--r-main-font);
-	font-variant-emoji: emoji;
-}
-
 /* Ensure code blocks use Fira Code exclusively */
 .reveal pre,
 .reveal code,
 .reveal pre code,
 .reveal .hljs {
 	font-family: var(--r-code-font) !important;
-	font-variant-emoji: none;
-}
-
-/* Specific emoji selectors for better targeting */
-.reveal .emoji,
-.reveal span[data-emoji],
-.reveal [class*="emoji"] {
-	font-family:
-		"Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-		sans-serif !important;
-	font-size: 1.2em;
-	vertical-align: -0.1em;
-}
-
-/* Target specific Unicode ranges for emojis */
-.reveal *:is([data-contains-emoji], :has(> .emoji)) {
-	font-family:
-		var(--r-main-font), "Noto Color Emoji", "Apple Color Emoji",
-		"Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
 }
