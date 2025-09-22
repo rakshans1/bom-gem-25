@@ -44,3 +44,7 @@ npm-debug.log
 # Database files
 *.db
 *.db-*
+
+# dialyzer
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
