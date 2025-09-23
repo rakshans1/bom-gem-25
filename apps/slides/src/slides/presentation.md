@@ -21,11 +21,11 @@ Note: Before we dive into impressive numbers, let's establish what Elixir actual
 ## Key Characteristics
 
 <ul>
-<li class="fragment" data-fragment-index="1">Built on the <strong>Erlang Virtual Machine (BEAM)</strong> - 30+ years of battle-testing</li>
-<li class="fragment" data-fragment-index="2"><strong>Functional programming</strong> with immutable data structures</li>
-<li class="fragment" data-fragment-index="3"><strong>Actor model</strong> with lightweight processes (not OS threads)</li>
-<li class="fragment" data-fragment-index="4"><strong>"Let it crash" philosophy</strong> - embrace failures and recover gracefully</li>
-<li class="fragment" data-fragment-index="5"><strong>Built-in distribution</strong> - designed for multi-node systems from day one</li>
+<li class="fragment" data-fragment-index="1">Built on the <strong>Erlang Virtual Machine (BEAM)</strong></li>
+<li class="fragment" data-fragment-index="2"><strong>Functional programming</strong></li>
+<li class="fragment" data-fragment-index="3"><strong>Actor model</strong></li>
+<li class="fragment" data-fragment-index="4"><strong>"Let it crash" philosophy</strong></li>
+<li class="fragment" data-fragment-index="5"><strong>Built-in distribution</strong></li>
 </ul>
 
 --
