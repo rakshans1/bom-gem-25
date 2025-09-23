@@ -113,20 +113,6 @@ In Erlang VM, all code runs inside lightweight threads called **processes**. We 
 
 <!-- Slide 2.8 -->
 
-## Message Passing 💬
-
-Process communicate by sending messages between them:
-
-<iframe data-src="/demo/ping-pong"
-        data-lazy
-        width="100%"
-        height="650"
-        frameborder="0"
-        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
-</iframe>
-
---
-
 ## Concurrency Features
 
 <ul>
@@ -136,6 +122,20 @@ Process communicate by sending messages between them:
 <li class="fragment" data-fragment-index="4"><strong>Message passing</strong> - No shared state, no race conditions</li>
 <li class="fragment" data-fragment-index="5"><strong>Fault isolation</strong> - Process crashes don't affect others</li>
 </ul>
+
+--
+
+<!-- Slide 2.9 -->
+
+<iframe data-src="/demo/ping-pong"
+        data-lazy
+        width="100%"
+        height="720"
+        frameborder="0"
+        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
+</iframe>
+
+--
 
 ---
 

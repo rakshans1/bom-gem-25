@@ -21,7 +21,6 @@ defmodule GemWeb.PingPongDemoLive do
       |> assign(:message_count, 0)
       |> assign(:topology, default_topology)
       |> assign(:speed, default_speed)
-      |> assign(:controls_form, controls_form(default_topology, default_speed))
       |> assign(:simulation_pid, nil)
       |> assign(:animation_timer_ref, nil)
 
@@ -43,7 +42,6 @@ defmodule GemWeb.PingPongDemoLive do
       |> assign(:message_positions, [])
       |> assign(:status, :running)
       |> assign(:message_count, 0)
-      |> assign(:controls_form, controls_form(topology, speed))
 
     simulation_pid = start_ping_pong_simulation(processes, topology, speed)
 
@@ -62,37 +60,6 @@ defmodule GemWeb.PingPongDemoLive do
      |> assign(:message_positions, [])
      |> assign(:simulation_pid, nil)}
   end
-
-  @impl true
-  def handle_event("update_controls", %{"_target" => ["controls", target], "controls" => params}, socket) do
-    socket =
-      case target do
-        "topology" ->
-          topology = Map.get(params, "topology", socket.assigns.topology)
-
-          socket
-          |> assign(:topology, topology)
-          |> assign(:processes, create_processes(topology))
-
-        "speed" ->
-          speed = parse_speed(Map.get(params, "speed"), socket.assigns.speed)
-          assign(socket, :speed, speed)
-
-        _ ->
-          socket
-      end
-
-    socket =
-      socket
-      |> assign(:controls_form, controls_form(socket.assigns.topology, socket.assigns.speed))
-      |> update_message_positions()
-      |> maybe_schedule_animation_tick()
-
-    {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event("update_controls", _params, socket), do: {:noreply, socket}
 
   @impl true
   def handle_info({:new_message, from_id, to_id, type}, %{assigns: %{status: :running}} = socket) do
@@ -257,19 +224,6 @@ defmodule GemWeb.PingPongDemoLive do
     Enum.find(processes, &(&1.id == id)) || %{id: id, name: "Unknown", color: "#6b7089"}
   end
 
-  defp controls_form(topology, speed) do
-    to_form(%{"topology" => topology, "speed" => Integer.to_string(speed)}, as: :controls)
-  end
-
-  defp parse_speed(nil, fallback), do: fallback
-
-  defp parse_speed(value, fallback) do
-    case Integer.parse(to_string(value)) do
-      {parsed, ""} -> parsed
-      _ -> fallback
-    end
-  end
-
   defp maybe_stop_simulation(socket) do
     stop_simulation(socket.assigns.simulation_pid)
     assign(socket, :simulation_pid, nil)
@@ -300,14 +254,6 @@ defmodule GemWeb.PingPongDemoLive do
 
   defp animation_frame_seconds do
     Float.round(@animation_tick_interval / 1000, 3)
-  end
-
-  defp control_select_classes do
-    [
-      "w-full rounded-lg border border-[#6b7089] bg-[#1e2132] px-4 py-2 text-[#c6c8d1]",
-      "focus:outline-none focus:ring-2 focus:ring-[#84a0c6] focus:border-[#84a0c6]",
-      "transition-colors shadow-sm"
-    ]
   end
 
   defp maybe_schedule_animation_tick(socket) do
@@ -341,69 +287,54 @@ defmodule GemWeb.PingPongDemoLive do
         style="background-color: #161821; color: #c6c8d1; font-family: 'Inter', sans-serif;"
       >
         <div class="max-w-6xl mx-auto">
-          <div class="rounded-xl p-8" style="background-color: #2e3244; border: 1px solid #1e2132;">
-            <.form for={@controls_form} id="ping-pong-controls" phx-change="update_controls">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="space-y-4">
-                  <h3 class="text-xl font-semibold" style="color: #84a0c6;">Network Topology</h3>
-                  <.input
-                    field={@controls_form[:topology]}
-                    type="select"
-                    options={[
-                      {"Chain (A→B→C→D)", "chain"},
-                      {"Ring (A→B→C→D→A)", "ring"},
-                      {"Hub & Spoke", "hub"}
-                    ]}
-                    class={control_select_classes()}
-                    disabled={@status == :running}
-                  />
-                </div>
-
-                <div class="space-y-4">
-                  <h3 class="text-xl font-semibold" style="color: #89b8c2;">Message Speed</h3>
-                  <.input
-                    field={@controls_form[:speed]}
-                    type="select"
-                    options={[
-                      {"Fast (200ms)", "200"},
-                      {"Normal (500ms)", "500"},
-                      {"Slow (1s)", "1000"}
-                    ]}
-                    class={control_select_classes()}
-                    disabled={@status == :running}
-                  />
-                </div>
-
-                <div class="space-y-4">
-                  <h3 class="text-xl font-semibold" style="color: #b4be82;">Status</h3>
-                  <div class="flex items-center gap-3">
-                    <div
-                      class={["w-3 h-3 rounded-full", @status == :running && "animate-pulse"]}
-                      style={
-                        if @status == :running do
-                          "background-color: #b4be82;"
-                        else
-                          "background-color: #6b7089;"
-                        end
-                      }
-                    >
-                    </div>
-                    <span class="text-lg capitalize" style="color: #c6c8d1;">{@status}</span>
-                  </div>
-                  <div style="color: #c6c8d1;">
-                    Messages sent:
-                    <span style="color: #84a0c6; font-family: 'Fira Code', monospace;">
-                      {@message_count}
-                    </span>
-                  </div>
-                </div>
+          <div
+            class="rounded-xl p-5 md:p-6"
+            style="background-color: #2e3244; border: 1px solid #1e2132;"
+          >
+            <div class="mb-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:mb-5 sm:gap-4">
+              <div
+                class="flex flex-wrap items-center gap-3 text-sm sm:text-base"
+                style="color: #6b7089;"
+              >
+                <span class="inline-flex items-center gap-2">
+                  <span
+                    class={["w-3 h-3 rounded-full", @status == :running && "animate-pulse"]}
+                    style={
+                      if @status == :running do
+                        "background-color: #b4be82; box-shadow: 0 0 14px #b4be82;"
+                      else
+                        "background-color: #6b7089;"
+                      end
+                    }
+                  >
+                  </span>
+                  <span class="capitalize" style="color: #c6c8d1;">{@status}</span>
+                </span>
+                <span class="font-mono" style="color: #84a0c6;">
+                  {String.pad_leading(Integer.to_string(@message_count), 2, "0")}
+                </span>
+                <span>messages sent</span>
               </div>
-            </.form>
 
-            <div class="mb-8">
+              <button
+                phx-click={if @status == :running, do: "stop_demo", else: "start_demo"}
+                class="inline-flex flex-shrink-0 items-center justify-center gap-2 rounded-lg px-5 py-1.5 text-sm font-semibold uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:justify-self-end"
+                style={
+                  if @status == :running do
+                    "background-color: #e27878; color: #161821; box-shadow: 0 16px 32px rgba(226, 120, 120, 0.2);"
+                  else
+                    "background: linear-gradient(135deg, #84a0c6, #89b8c2); color: #161821; box-shadow: 0 16px 32px rgba(132, 160, 198, 0.2);"
+                  end
+                }
+              >
+                {if @status == :running, do: "Stop", else: "Start"}
+              </button>
+            </div>
+
+            <div class="mb-2 sm:mb-3">
               <div
                 class="relative w-full rounded-lg"
-                style="height: 400px; background-color: #1e2132; border: 1px solid #6b7089;"
+                style="height: 320px; background-color: #1e2132; border: 1px solid #6b7089;"
               >
                 <div
                   :for={process <- @processes}
@@ -436,78 +367,46 @@ defmodule GemWeb.PingPongDemoLive do
               </div>
             </div>
 
-            <div class="mb-8">
-              <h4 class="text-lg font-semibold mb-4" style="color: #c6c8d1;">Message Types</h4>
-              <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full" style="background-color: #84a0c6;"></div>
-                  <span class="text-sm" style="color: #c6c8d1;">Ping</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full" style="background-color: #89b8c2;"></div>
-                  <span class="text-sm" style="color: #c6c8d1;">Pong</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full" style="background-color: #b4be82;"></div>
-                  <span class="text-sm" style="color: #c6c8d1;">Data</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full" style="background-color: #e2a478;"></div>
-                  <span class="text-sm" style="color: #c6c8d1;">Task</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full" style="background-color: #c6c8d1;"></div>
-                  <span class="text-sm" style="color: #c6c8d1;">Result</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full" style="background-color: #9d79d6;"></div>
-                  <span class="text-sm" style="color: #c6c8d1;">Gossip</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex gap-4 justify-center">
-              <button
-                phx-click={if @status == :running, do: "stop_demo", else: "start_demo"}
-                class="px-8 py-3 rounded-lg font-semibold text-lg transition-all focus:outline-none"
-                style={
-                  if @status == :running do
-                    "background-color: #e27878; color: #161821; hover:opacity-90;"
-                  else
-                    "background: linear-gradient(135deg, #84a0c6, #89b8c2); color: #161821; hover:opacity-90;"
-                  end
-                }
-              >
-                {if @status == :running, do: "Stop Demo", else: "Start Demo"}
-              </button>
-            </div>
-
-            <div :if={@status == :running and length(@messages) > 0} class="mt-8">
-              <h4 class="text-lg font-semibold mb-4" style="color: #c6c8d1;">Recent Messages</h4>
-              <div class="space-y-2 max-h-40 overflow-y-auto">
-                <div
-                  :for={message <- Enum.take(@messages, 10)}
-                  class="flex items-center gap-3 text-sm p-2 rounded"
-                  style="background-color: rgba(180, 190, 130, 0.05);"
-                >
-                  <div
-                    class="w-2 h-2 rounded-full"
-                    style={"background-color: #{message_color(message.type)};"}
-                  >
-                  </div>
-                  <span style="color: #c6c8d1;">
-                    <span style="color: #{get_process_by_id(@processes, message.from).color};">
-                      {get_process_by_id(@processes, message.from).name}
-                    </span>
-                    →
-                    <span style="color: #{get_process_by_id(@processes, message.to).color};">
-                      {get_process_by_id(@processes, message.to).name}
-                    </span>
-                    :
-                    <span style="color: #{message_color(message.type)}; text-transform: capitalize;">
-                      {message.type}
-                    </span>
+            <div class="mt-3 sm:mt-4">
+              <div class="rounded-lg border border-[#1e2132] bg-[#1e2132]/80 p-6 shadow-inner backdrop-blur">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="text-lg font-semibold" style="color: #c6c8d1;">Recent Messages</h4>
+                  <span class="text-xs uppercase tracking-[0.35em]" style="color: #6b7089;">
+                    Total {@message_count}
                   </span>
+                </div>
+                <div class="mt-4 max-h-56 overflow-y-auto space-y-2 pr-1">
+                  <div
+                    :if={Enum.empty?(@messages)}
+                    class="rounded-lg border border-dashed border-[#2e3244] p-4 text-sm text-center"
+                    style="color: #6b7089;"
+                  >
+                    Messages will appear.
+                  </div>
+                  <div
+                    :for={message <- Enum.take(@messages, 3)}
+                    class="flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors"
+                    style="background-color: rgba(180, 190, 130, 0.05);"
+                  >
+                    <div
+                      class="w-2 h-2 rounded-full"
+                      style={"background-color: #{message_color(message.type)};"}
+                    >
+                    </div>
+                    <span style="color: #c6c8d1;">
+                      <span style="color: #{get_process_by_id(@processes, message.from).color};">
+                        {get_process_by_id(@processes, message.from).name}
+                      </span>
+                      →
+                      <span style="color: #{get_process_by_id(@processes, message.to).color};">
+                        {get_process_by_id(@processes, message.to).name}
+                      </span>
+                      :
+                      <span style="color: #{message_color(message.type)}; text-transform: capitalize;">
+                        {message.type}
+                      </span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
