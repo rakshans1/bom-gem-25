@@ -29,6 +29,13 @@ defmodule Gem.Demo.FaultTolerance.Supervisor do
 
     children = [
       %{
+        id: :api_worker,
+        start: {APIWorker, :start_link, [base_child_opts]},
+        restart: :transient,
+        type: :worker,
+        shutdown: 5_000
+      },
+      %{
         id: :db_worker,
         start: {DBWorker, :start_link, [base_child_opts]},
         restart: :permanent,
@@ -39,13 +46,6 @@ defmodule Gem.Demo.FaultTolerance.Supervisor do
         id: :cache_worker,
         start: {CacheWorker, :start_link, [base_child_opts]},
         restart: :temporary,
-        type: :worker,
-        shutdown: 5_000
-      },
-      %{
-        id: :api_worker,
-        start: {APIWorker, :start_link, [base_child_opts]},
-        restart: :transient,
         type: :worker,
         shutdown: 5_000
       }

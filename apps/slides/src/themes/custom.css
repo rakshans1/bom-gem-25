@@ -275,7 +275,12 @@
 }
 
 /* SLIDES */
+
+.reveal .slides {
+	margin: unset;
+}
 .reveal .slides section {
+	margin: 10px;
 	text-align: left;
 }
 
@@ -378,4 +383,12 @@
 .reveal pre code,
 .reveal .hljs {
 	font-family: var(--r-code-font) !important;
+}
+.reveal .slides section.fullscreen {
+	width: 100% !important;
+	height: 100vh !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	max-width: none !important;
+	max-height: none !important;
 }
