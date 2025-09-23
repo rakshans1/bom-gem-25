@@ -40,6 +40,7 @@ Note: Before we dive into impressive numbers, let's establish what Elixir actual
 |> List.last()
 |> String.replace_suffix("!", "")
 |> String.upcase()
+# => "COOL"
 ```
 
 --
@@ -101,6 +102,22 @@ In Erlang VM, all code runs inside lightweight threads called **processes**. We 
 <!-- Slide 2.7 -->
 
 <iframe data-src="/demo/processes"
+        data-lazy
+        width="100%"
+        height="650"
+        frameborder="0"
+        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
+</iframe>
+
+--
+
+<!-- Slide 2.8 -->
+
+## Message Passing 💬
+
+Process communicate by sending messages between them:
+
+<iframe data-src="/demo/ping-pong"
         data-lazy
         width="100%"
         height="650"
