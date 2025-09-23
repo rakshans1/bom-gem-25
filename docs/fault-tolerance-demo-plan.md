@@ -25,19 +25,22 @@
   - Restart strategy selector (`:one_for_one`, `:one_for_all`, `:rest_for_one`).
   - Crash payload selector (`normal`, `runtime`, `timeout`, `brutal_kill`).
   - Per-worker "Crash" buttons.
-  - System power toggle (start/stop the supervision tree).
+  - Single Iceberg-themed "Start/Stop Demo" toggle button that changes label and action based on system state.
 - **Micro-interactions:**
   - Buttons scale to 105% and glow on hover, reset with an ease-out.
   - Status badges pulse subtly every 6 seconds to imply liveness.
   - Event log autoscrolls but pauses when the pointer enters the panel.
 
 ## Visual Layout & Tailwind Notes
-- **Top Control Bar:** `flex` row with compact selects (`class="gap-4"`), `shadow-lg`, translucent panel (`bg-white/5 backdrop-blur`).
+- **Control Center Card (right column):** Stacked selects and toggle button in a compact panel sitting above the Worker Stateboard; leverages the Iceberg gradient for the primary action.
 - **Main Canvas:**
   - SVG layer for lines (`stroke-dasharray` animated during restarts).
-  - Process nodes sized 140×140 with radial gradients and drop shadows.
+  - Process nodes sized 140×140 with soft translucent fills and status-colored borders (no drop shadows).
   - Each node houses a title, restart badge, status chip, and crash button.
+- **Background:** Solid deep-slate base (`bg-[#11131c]`) keeps focus on the nodes—no global gradients.
+- **Controls Accent:** The start/stop toggle uses an Iceberg gradient (`from-[#89b8c2] to-[#84a0c6]`) with subtle scaling to signal readiness, and lives alongside the selects in the side column.
 - **Side Panel:** Sticky card listing workers, last crash reason, restart attempts, and a sparkline of recent activity.
+  - Last exit reason shows a compact, single-line label: `:runtime_error | :timeout | :kill | :normal | :unknown`.
 - **Bottom Stats Ribbon:** 4 KPI cards (uptime, total crashes, total restarts, health score).
 - **Responsive Strategy:** Layout collapses to a stacked column on sub-1024px screens with controls pinned above the canvas.
 
@@ -45,10 +48,11 @@
 - **Color Palette** (aligns with existing demos):
   - Supervisor `#e2a478`, DB `#84a0c6`, Cache `#89b8c2`, API `#b4be82`.
 - **Status States:**
-  - `:running` – steady glow + green outline.
-  - `:crashed` – 200ms red flash + shake.
-  - `:restarting` – yellow pulse wave expanding outward.
-  - `:stopped` – opacity drops to 30% with dashed border.
+  - `:running` – emerald border, steady indicator LED.
+  - `:pending` – rose border while a crash is in-flight.
+  - `:restarting` – amber border held briefly after the worker boots.
+  - `:booting` – cyan border with pulse until fully online.
+  - `:offline` – muted slate border.
 - **Line Feedback:** Lines fade when a dependent is down; reignite with a sweep gradient when the child recovers.
 
 ## Process Architecture Snapshot
@@ -101,6 +105,7 @@
 ## Testing Strategy
 - LiveView tests that simulate crash events, assert counters via `has_element?/2` using DOM IDs (`#db-worker`, `#system-stats`).
 - Worker unit tests verifying restart behavior for each exit type.
+  - Assert the sidebar "Last exit" label maps to the compact set above.
 - Integration test ensuring strategy updates propagate without restarting the LiveView process.
 
 ## Slide 2.10 Integration & Presenter Notes

@@ -9,10 +9,10 @@ defmodule GemWeb.FaultToleranceDemoLive do
   alias Gem.Demo.Supervisor, as: DemoSupervisor
 
   @canvas_nodes [
-    %{key: :supervisor, name: "Root Supervisor", x: 50, y: 18, color: "#e2a478"},
-    %{key: :db, name: "DB Worker", x: 22, y: 64, color: DBWorker.metadata().color},
-    %{key: :cache, name: "Cache Worker", x: 50, y: 69, color: CacheWorker.metadata().color},
-    %{key: :api, name: "API Worker", x: 78, y: 64, color: APIWorker.metadata().color}
+    %{key: :supervisor, name: "Root Supervisor", x: 50, y: 25, color: "#e2a478"},
+    %{key: :api, name: "API Worker", x: 18, y: 84, color: APIWorker.metadata().color},
+    %{key: :db, name: "DB Worker", x: 50, y: 88, color: DBWorker.metadata().color},
+    %{key: :cache, name: "Cache Worker", x: 82, y: 84, color: CacheWorker.metadata().color}
   ]
 
   @strategy_options [
@@ -29,6 +29,7 @@ defmodule GemWeb.FaultToleranceDemoLive do
   ]
 
   @max_events 32
+  @restart_animation_ms 1100
 
   @impl true
   def mount(_params, _session, socket) do
@@ -46,6 +47,7 @@ defmodule GemWeb.FaultToleranceDemoLive do
       |> assign(:supervisor_pid, nil)
       |> assign(:worker_states, default_worker_states())
       |> assign(:monitors, %{})
+      |> assign(:restart_timers, %{})
       |> assign(:event_counter, 0)
       |> assign(:event_order, [])
       |> assign(:stats, %{total_crashes: 0, total_restarts: 0, health: 100, uptime_ms: 0})
@@ -169,10 +171,28 @@ defmodule GemWeb.FaultToleranceDemoLive do
       if key do
         socket
         |> assign(:monitors, monitors)
+        |> cancel_restart_timer(key)
         |> handle_worker_down(key, pid, reason)
       else
         socket
       end
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:transition_running, key}, socket) do
+    # Drop and cancel any pending timer for this key
+    {ref, timers} = Map.pop(socket.assigns.restart_timers, key)
+    if ref, do: Process.cancel_timer(ref)
+
+    socket =
+      update_worker_state(%{socket | assigns: %{socket.assigns | restart_timers: timers}}, key, fn state ->
+        # Only set to running if the worker is alive or was recently started
+        case state.status do
+          :restarting -> Map.put(state, :status, :running)
+          _ -> state
+        end
+      end)
 
     {:noreply, socket}
   end
@@ -249,7 +269,7 @@ defmodule GemWeb.FaultToleranceDemoLive do
       DemoSupervisor.stop_tree(socket.assigns.supervisor_pid)
     end
 
-    socket = cancel_uptime_timer(socket)
+    socket = socket |> cancel_uptime_timer() |> cancel_all_restart_timers()
 
     socket =
       socket
@@ -330,17 +350,42 @@ defmodule GemWeb.FaultToleranceDemoLive do
     if prev_ref, do: Process.demonitor(prev_ref, [:flush])
     ref = Process.monitor(pid)
 
-    worker_states =
-      Map.update!(socket.assigns.worker_states, key, fn state ->
-        state
-        |> Map.put(:pid, pid)
-        |> Map.put(:monitor_ref, ref)
-        |> Map.put(:status, :running)
-        |> Map.put(:pending_reason, nil)
-        |> Map.put(:pending_restart, false)
-        |> Map.put(:last_start_at, DateTime.utc_now())
-        |> Map.update(:restarts, restarts_delta, &(&1 + restarts_delta))
-      end)
+    {worker_states, socket} =
+      if was_restart? do
+        # Keep visible "restarting" badge for a short period after boot
+        ws =
+          Map.update!(socket.assigns.worker_states, key, fn state ->
+            state
+            |> Map.put(:pid, pid)
+            |> Map.put(:monitor_ref, ref)
+            |> Map.put(:status, :restarting)
+            |> Map.put(:pending_reason, nil)
+            |> Map.put(:pending_restart, false)
+            |> Map.put(:last_start_at, DateTime.utc_now())
+            |> Map.update(:restarts, restarts_delta, &(&1 + restarts_delta))
+          end)
+
+        socket =
+          socket
+          |> cancel_restart_timer(key)
+          |> put_restart_timer(key, Process.send_after(self(), {:transition_running, key}, @restart_animation_ms))
+
+        {ws, socket}
+      else
+        ws =
+          Map.update!(socket.assigns.worker_states, key, fn state ->
+            state
+            |> Map.put(:pid, pid)
+            |> Map.put(:monitor_ref, ref)
+            |> Map.put(:status, :running)
+            |> Map.put(:pending_reason, nil)
+            |> Map.put(:pending_restart, false)
+            |> Map.put(:last_start_at, DateTime.utc_now())
+            |> Map.update(:restarts, restarts_delta, &(&1 + restarts_delta))
+          end)
+
+        {ws, socket}
+      end
 
     stats =
       update_health(%{
@@ -556,11 +601,49 @@ defmodule GemWeb.FaultToleranceDemoLive do
     end
   end
 
+  defp cancel_all_restart_timers(socket) do
+    Enum.each(Map.values(socket.assigns.restart_timers), fn ref -> Process.cancel_timer(ref) end)
+    assign(socket, :restart_timers, %{})
+  end
+
+  defp cancel_restart_timer(socket, key) do
+    case Map.pop(socket.assigns.restart_timers, key) do
+      {nil, timers} ->
+        assign(socket, :restart_timers, timers)
+
+      {ref, timers} ->
+        Process.cancel_timer(ref)
+        assign(socket, :restart_timers, timers)
+    end
+  end
+
+  defp put_restart_timer(socket, key, ref) do
+    assign(socket, :restart_timers, Map.put(socket.assigns.restart_timers, key, ref))
+  end
+
   defp uptime_now(nil), do: 0
 
   defp uptime_now(started_at_ms) do
     System.monotonic_time(:millisecond) - started_at_ms
   end
+
+  # Compact, one-line last-exit classifier for the sidebar.
+  # Maps complex exit terms to a small set of atom-like labels:
+  # :runtime_error | :timeout | :kill | :normal | :unknown
+  defp compact_reason({%{__struct__: mod} = _exception, _stack}) when is_atom(mod) do
+    ":runtime_error"
+  end
+
+  defp compact_reason(%{__struct__: mod}) when is_atom(mod), do: ":runtime_error"
+
+  defp compact_reason({:shutdown, _}), do: ":normal"
+  defp compact_reason(:normal), do: ":normal"
+  defp compact_reason(:shutdown), do: ":normal"
+  defp compact_reason(:timeout), do: ":timeout"
+  defp compact_reason(:kill), do: ":kill"
+  defp compact_reason(:killed), do: ":kill"
+  defp compact_reason(other) when is_atom(other), do: ":#{other}"
+  defp compact_reason(_), do: ":unknown"
 
   defp format_reason({:shutdown, :one_for_all}), do: "Supervisor restart (one_for_all)"
   defp format_reason({:shutdown, :restart}), do: "Supervisor restart"
@@ -601,119 +684,38 @@ defmodule GemWeb.FaultToleranceDemoLive do
 
     ~H"""
     <Layouts.demo flash={@flash}>
-      <div
-        class="min-h-screen w-full flex flex-col gap-8 px-6 sm:px-10 py-10"
-        style="background: radial-gradient(circle at top, #1e2132 0%, #151821 45%, #11131c 100%); color: #c6c8d1;"
-      >
-        <div class="w-full flex flex-col lg:flex-row items-start gap-6 lg:items-center justify-between rounded-2xl bg-white/5 backdrop-blur px-6 py-5 border border-white/10 shadow-2xl shadow-black/20 transition-all">
-          <div class="space-y-2">
-            <p class="text-sm uppercase tracking-[0.25em] text-white/60">Restart Strategy</p>
-            <h2 class="text-2xl font-semibold text-white">{strategy_name(@strategy)}</h2>
-            <p class="text-sm text-white/70 max-w-lg">{@strategy_description}</p>
-          </div>
-
-          <div class="flex flex-col md:flex-row gap-4 md:items-center">
-            <.form
-              for={@control_form}
-              id="fault-controls"
-              class="flex flex-col md:flex-row gap-4"
-            >
-              <.input
-                field={@control_form[:strategy]}
-                type="select"
-                options={Enum.map(@strategy_options, &{&1.label, &1.value})}
-                phx-change="select_strategy"
-                class="min-w-[220px] px-4 py-2 rounded-xl text-sm font-medium border border-white/10 bg-slate-900/60 text-white focus:ring-2 focus:ring-amber-400/70"
-              />
-              <.input
-                field={@control_form[:crash_type]}
-                type="select"
-                options={Enum.map(@crash_options, &{&1.label, &1.value})}
-                phx-change="select_crash"
-                class="min-w-[200px] px-4 py-2 rounded-xl text-sm font-medium border border-white/10 bg-slate-900/60 text-white focus:ring-2 focus:ring-rose-400/70"
-              />
-            </.form>
-
-            <div class="flex gap-3">
-              <button
-                type="button"
-                id="start-system"
-                phx-click="start_system"
-                class={[
-                  "px-5 py-2 rounded-xl font-semibold shadow-lg shadow-emerald-500/30 transition-transform",
-                  "bg-gradient-to-r from-emerald-400/90 to-teal-400/80 text-slate-900",
-                  !@system_running? && "hover:scale-[1.02]"
-                ]}
-                disabled={@system_running?}
-              >
-                <span class="inline-flex items-center gap-2">
-                  <.icon name="hero-power" class="w-4 h-4" /> Start
-                </span>
-              </button>
-              <button
-                type="button"
-                id="stop-system"
-                phx-click="stop_system"
-                class="px-5 py-2 rounded-xl font-semibold border border-white/20 text-white/80 hover:text-white hover:border-white/40 transition-all"
-                disabled={!@system_running?}
-              >
-                Stop
-              </button>
-            </div>
-          </div>
-        </div>
-
+      <div class="min-h-screen w-full flex flex-col gap-8 px-6 sm:px-10 py-10 bg-[#11131c] text-slate-200">
         <div class="flex flex-col xl:flex-row gap-6 w-full">
           <div class="flex-1 bg-[#1a1e2b] border border-white/10 rounded-3xl p-6 relative overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
-            <div class="absolute inset-0 pointer-events-none">
-              <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#84a0c6" stop-opacity="0.45" />
-                    <stop offset="100%" stop-color="#b4be82" stop-opacity="0.4" />
-                  </linearGradient>
-                </defs>
-                <line
-                  x1="50%"
-                  y1="20%"
-                  x2="22%"
-                  y2="64%"
-                  stroke="url(#line-gradient)"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  class={line_activity_class(@worker_states.db.status)}
-                />
-                <line
-                  x1="50%"
-                  y1="20%"
-                  x2="50%"
-                  y2="69%"
-                  stroke="url(#line-gradient)"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  class={line_activity_class(@worker_states.cache.status)}
-                />
-                <line
-                  x1="50%"
-                  y1="20%"
-                  x2="78%"
-                  y2="64%"
-                  stroke="url(#line-gradient)"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  class={line_activity_class(@worker_states.api.status)}
-                />
+            <div
+              id="worker-network"
+              phx-hook="ConnectorCanvas"
+              class="relative w-full min-h-[620px]"
+            >
+              <svg
+                id="worker-network-connectors"
+                data-role="connector-layer"
+                class="absolute inset-0 w-full h-full pointer-events-none"
+                xmlns="http://www.w3.org/2000/svg"
+                preserveAspectRatio="none"
+                phx-update="ignore"
+              >
               </svg>
-            </div>
 
-            <div class="relative w-full h-[520px]">
               <div
                 :for={node <- @canvas_nodes}
+                id={"node-" <> to_string(node.key)}
+                data-node-key={node.key}
+                data-connector-class={
+                  if(node.key != :supervisor,
+                    do: line_activity_class(@worker_states[node.key].status)
+                  )
+                }
                 class={[
-                  "absolute -translate-x-1/2 -translate-y-1/2 w-[200px] min-h-[200px] rounded-3xl px-7 py-7 flex flex-col gap-6 border border-white/12 backdrop-blur transition-colors duration-300",
-                  node.key == :supervisor && "bg-gradient-to-br from-amber-500/20 to-orange-400/10",
-                  node.key != :supervisor && "bg-gradient-to-br from-white/6 to-white/2",
-                  node.key != :supervisor && node_shadow(@worker_states[node.key].status)
+                  "absolute -translate-x-1/2 -translate-y-1/2 w-[200px] min-h-[200px] rounded-3xl px-5 py-5 flex flex-col gap-6 border-2 backdrop-blur transition-colors duration-300",
+                  node.key == :supervisor && "bg-[#201d29] border-amber-300/70",
+                  node.key != :supervisor && "bg-slate-900/70",
+                  node.key != :supervisor && node_border(@worker_states, node.key)
                 ]}
                 style={"left: #{node.x}%; top: #{node.y}%;"}
               >
@@ -786,6 +788,54 @@ defmodule GemWeb.FaultToleranceDemoLive do
           </div>
 
           <aside class="w-full xl:w-[340px] space-y-6">
+            <div class="bg-white/5 border border-white/10 rounded-3xl p-6 shadow-xl shadow-black/30 space-y-5">
+              <div class="space-y-2">
+                <div class="space-y-1">
+                  <h3 class="text-lg font-semibold text-white">{strategy_name(@strategy)}</h3>
+                  <p class="text-xs text-white/60 leading-relaxed">{@strategy_description}</p>
+                </div>
+              </div>
+
+              <.form for={@control_form} id="fault-controls" class="space-y-3">
+                <.input
+                  field={@control_form[:strategy]}
+                  type="select"
+                  options={Enum.map(@strategy_options, &{&1.label, &1.value})}
+                  phx-change="select_strategy"
+                  class="w-full px-4 py-2 rounded-xl text-sm font-medium border border-white/10 bg-slate-900/60 text-white focus:ring-2 focus:ring-amber-400/70"
+                />
+                <.input
+                  field={@control_form[:crash_type]}
+                  type="select"
+                  options={Enum.map(@crash_options, &{&1.label, &1.value})}
+                  phx-change="select_crash"
+                  class="w-full px-4 py-2 rounded-xl text-sm font-medium border border-white/10 bg-slate-900/60 text-white focus:ring-2 focus:ring-rose-400/70"
+                />
+              </.form>
+
+              <button
+                type="button"
+                id="toggle-system"
+                phx-click={(@system_running? && "stop_system") || "start_system"}
+                class={[
+                  "w-full px-6 py-2 rounded-xl font-semibold transition-colors transition-transform duration-200",
+                  "bg-gradient-to-r from-[#89b8c2]/90 to-[#84a0c6]/90 text-slate-900",
+                  "hover:from-[#a6c6d1] hover:to-[#8fb5c2]",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#89b8c2] focus-visible:ring-offset-[#1a1e2b]",
+                  @system_running? && "hover:scale-[1.01]",
+                  !@system_running? && "hover:scale-[1.03]"
+                ]}
+              >
+                <span class="inline-flex items-center justify-center gap-2">
+                  <.icon
+                    name={if @system_running?, do: "hero-pause-circle", else: "hero-power"}
+                    class="w-4 h-4"
+                  />
+                  {if @system_running?, do: "Stop", else: "Start"}
+                </span>
+              </button>
+            </div>
+
             <div class="bg-white/5 border border-white/10 rounded-3xl p-6 shadow-xl shadow-black/30">
               <h4 class="text-sm uppercase tracking-[0.25em] text-white/60 mb-4">
                 Worker Stateboard
@@ -805,8 +855,9 @@ defmodule GemWeb.FaultToleranceDemoLive do
                     </span>
                     <div>
                       <p class="text-sm font-semibold text-white">{worker.name}</p>
-                      <p class="text-xs text-white/60 break-words max-w-[180px]">
-                        Last exit: {(worker.last_exit_reason && format_reason(worker.last_exit_reason)) ||
+                      <p class="text-xs text-white/60 whitespace-nowrap truncate max-w-[180px]">
+                        Last exit: {(worker.last_exit_reason &&
+                                       compact_reason(worker.last_exit_reason)) ||
                           "--"}
                       </p>
                     </div>
@@ -852,27 +903,6 @@ defmodule GemWeb.FaultToleranceDemoLive do
             </div>
           </aside>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-5 shadow-lg">
-            <p class="text-xs uppercase tracking-[0.25em] text-emerald-200">Uptime</p>
-            <p class="mt-2 text-2xl font-semibold text-emerald-100">
-              {format_uptime(@stats.uptime_ms)}
-            </p>
-          </div>
-          <div class="rounded-2xl border border-rose-400/20 bg-rose-400/10 p-5 shadow-lg">
-            <p class="text-xs uppercase tracking-[0.25em] text-rose-200">Crashes</p>
-            <p class="mt-2 text-2xl font-semibold text-rose-100">{@stats.total_crashes}</p>
-          </div>
-          <div class="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-5 shadow-lg">
-            <p class="text-xs uppercase tracking-[0.25em] text-cyan-200">Restarts</p>
-            <p class="mt-2 text-2xl font-semibold text-cyan-100">{@stats.total_restarts}</p>
-          </div>
-          <div class="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-5 shadow-lg">
-            <p class="text-xs uppercase tracking-[0.25em] text-amber-200">Health</p>
-            <p class="mt-2 text-2xl font-semibold text-amber-100">{@stats.health}%</p>
-          </div>
-        </div>
       </div>
     </Layouts.demo>
     """
@@ -896,12 +926,16 @@ defmodule GemWeb.FaultToleranceDemoLive do
   defp line_activity_class(:booting), do: "animate-pulse opacity-80"
   defp line_activity_class(_), do: "opacity-30"
 
-  defp node_shadow(:running), do: "shadow-[0_0_35px_rgba(180,190,130,0.35)]"
-  defp node_shadow(:pending), do: "shadow-[0_0_45px_rgba(239,68,68,0.45)]"
-  defp node_shadow(:restarting), do: "shadow-[0_0_40px_rgba(248,196,113,0.45)]"
-  defp node_shadow(:offline), do: "shadow-[0_0_25px_rgba(100,116,139,0.15)]"
-  defp node_shadow(:booting), do: "shadow-[0_0_35px_rgba(244,224,144,0.35)]"
-  defp node_shadow(_), do: ""
+  defp node_border(worker_states, key) do
+    case worker_states[key].status do
+      :running -> "border-emerald-300/80"
+      :pending -> "border-rose-400/80"
+      :restarting -> "border-amber-300/80"
+      :booting -> "border-cyan-300/80"
+      :offline -> "border-slate-600/70"
+      _ -> "border-slate-700/60"
+    end
+  end
 
   defp worker_status_label(:running), do: "Running"
   defp worker_status_label(:booting), do: "Booting"
@@ -924,13 +958,5 @@ defmodule GemWeb.FaultToleranceDemoLive do
     Calendar.strftime(ts, "%H:%M:%S")
   rescue
     _ -> "--:--"
-  end
-
-  defp format_uptime(ms) do
-    seconds = div(ms, 1_000)
-    hours = div(seconds, 3600)
-    minutes = div(rem(seconds, 3600), 60)
-    secs = rem(seconds, 60)
-    "~2..0B:~2..0B:~2..0B" |> :io_lib.format([hours, minutes, secs]) |> IO.iodata_to_binary()
   end
 end

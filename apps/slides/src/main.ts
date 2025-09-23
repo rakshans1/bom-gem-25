@@ -9,10 +9,14 @@ import "./themes/custom.css";
 
 // Initialize Reveal.js
 const config: Options = {
+	width: 1920,
+	height: 1080,
 	hash: true,
-	controls: true,
+	controls: false,
+	controlsLayout: "edges",
 	progress: true,
-	center: true,
+	navigationMode: "linear",
+	// center: true,
 	transition: "slide",
 	plugins: [Markdown, Highlight, Notes],
 	markdown: {

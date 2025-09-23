@@ -25,13 +25,121 @@ import { LiveSocket } from "phoenix_live_view";
 import { hooks as colocatedHooks } from "phoenix-colocated/gem";
 import topbar from "../vendor/topbar";
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+const SimpleConnector = {
+	mounted() {
+		this.svg = this.el.querySelector("[data-role='connector-layer']");
+		this.draw = this.draw.bind(this);
+		this.handleResize = () => {
+			if (this.timeout) clearTimeout(this.timeout);
+			this.timeout = setTimeout(this.draw, 16);
+		};
+		window.addEventListener("resize", this.handleResize);
+		this.draw();
+	},
+
+	updated() {
+		this.draw();
+	},
+
+	destroyed() {
+		window.removeEventListener("resize", this.handleResize);
+		if (this.timeout) clearTimeout(this.timeout);
+	},
+
+	draw() {
+		if (!this.svg) return;
+		if (this.timeout) {
+			clearTimeout(this.timeout);
+			this.timeout = null;
+		}
+
+		const supervisor = this.el.querySelector("[data-node-key='supervisor']");
+		if (!supervisor) return;
+
+		const container = this.el.getBoundingClientRect();
+		this.svg.setAttribute("width", container.width);
+		this.svg.setAttribute("height", container.height);
+		this.svg.setAttribute(
+			"viewBox",
+			`0 0 ${container.width} ${container.height}`,
+		);
+		this.svg.innerHTML = "";
+
+		const defs = document.createElementNS(SVG_NS, "defs");
+		const gradient = document.createElementNS(SVG_NS, "linearGradient");
+		gradient.setAttribute("id", "worker-connector-gradient");
+		gradient.setAttribute("x1", "0%");
+		gradient.setAttribute("y1", "0%");
+		gradient.setAttribute("x2", "100%");
+		gradient.setAttribute("y2", "100%");
+
+		const stopStart = document.createElementNS(SVG_NS, "stop");
+		stopStart.setAttribute("offset", "0%");
+		stopStart.setAttribute("stop-color", "#84a0c6");
+		stopStart.setAttribute("stop-opacity", "0.45");
+		gradient.appendChild(stopStart);
+
+		const stopEnd = document.createElementNS(SVG_NS, "stop");
+		stopEnd.setAttribute("offset", "100%");
+		stopEnd.setAttribute("stop-color", "#b4be82");
+		stopEnd.setAttribute("stop-opacity", "0.4");
+		gradient.appendChild(stopEnd);
+
+		defs.appendChild(gradient);
+		this.svg.appendChild(defs);
+
+		const supervisorRect = supervisor.getBoundingClientRect();
+		const supervisorX =
+			supervisorRect.left + supervisorRect.width / 2 - container.left;
+		const supervisorY = supervisorRect.bottom - container.top;
+
+		const workers = this.el.querySelectorAll(
+			"[data-node-key]:not([data-node-key='supervisor'])",
+		);
+
+		workers.forEach((worker) => {
+			const workerRect = worker.getBoundingClientRect();
+			const workerX = workerRect.left + workerRect.width / 2 - container.left;
+			const workerY = workerRect.top - container.top;
+
+			const midY = (supervisorY + workerY) / 2;
+			const curveStrength = Math.max(
+				40,
+				Math.abs(workerX - supervisorX) * 0.25,
+			);
+			const direction = workerX >= supervisorX ? 1 : -1;
+			const controlX =
+				supervisorX + curveStrength * (direction === 0 ? 1 : direction);
+
+			const path = document.createElementNS(SVG_NS, "path");
+			path.setAttribute(
+				"d",
+				`M ${supervisorX} ${supervisorY} Q ${controlX} ${midY} ${workerX} ${workerY}`,
+			);
+			path.setAttribute("fill", "none");
+			path.setAttribute("stroke", "url(#worker-connector-gradient)");
+			path.setAttribute("stroke-width", "3");
+			path.setAttribute("stroke-linecap", "round");
+
+			const connectorClass = worker.dataset.connectorClass;
+			if (connectorClass) {
+				path.setAttribute("class", connectorClass);
+			}
+
+			this.svg.appendChild(path);
+		});
+	},
+};
+
 const csrfToken = document
 	.querySelector("meta[name='csrf-token']")
 	.getAttribute("content");
 const liveSocket = new LiveSocket("/live", Socket, {
 	longPollFallbackMs: 2500,
 	params: { _csrf_token: csrfToken },
-	hooks: { ...colocatedHooks },
+	hooks: { ...colocatedHooks, ConnectorCanvas: SimpleConnector },
 });
 
 // Show progress bar on live navigation and form submits
