@@ -85,12 +85,19 @@ defmodule GemWeb.Layouts do
   """
   attr :flash, :map, required: true
   attr :current_scope, :map, default: nil
-  slot :inner_block, required: true
+  attr :inner_content, :any, default: nil
+  slot :inner_block
 
   def demo(assigns) do
+    assigns = assign_new(assigns, :inner_block, fn -> [] end)
+
     ~H"""
     <main class="min-h-svh w-svw">
-      {render_slot(@inner_block)}
+      <%= if @inner_block != [] do %>
+        {render_slot(@inner_block)}
+      <% else %>
+        {@inner_content}
+      <% end %>
     </main>
     <.flash_group flash={@flash} />
     """
