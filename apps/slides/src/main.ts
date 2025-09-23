@@ -16,7 +16,6 @@ const config: Options = {
 	controlsLayout: "edges",
 	progress: true,
 	navigationMode: "linear",
-	// center: true,
 	transition: "slide",
 	plugins: [Markdown, Highlight, Notes],
 	markdown: {
