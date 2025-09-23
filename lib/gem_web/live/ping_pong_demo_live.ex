@@ -282,131 +282,115 @@ defmodule GemWeb.PingPongDemoLive do
   def render(assigns) do
     ~H"""
     <Layouts.demo flash={@flash}>
-      <div
-        class="min-h-screen p-8"
-        style="background-color: #161821; color: #c6c8d1; font-family: 'Inter', sans-serif;"
-      >
-        <div class="max-w-6xl mx-auto">
-          <div
-            class="rounded-xl p-5 md:p-6"
-            style="background-color: #2e3244; border: 1px solid #1e2132;"
-          >
-            <div class="mb-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:mb-5 sm:gap-4">
-              <div
-                class="flex flex-wrap items-center gap-3 text-sm sm:text-base"
-                style="color: #6b7089;"
-              >
+      <div class="min-h-screen w-full bg-[#11131c] text-slate-200 px-6 sm:px-10 py-10">
+        <div class="mx-auto flex min-h-[80vh] w-full max-w-6xl flex-col gap-8">
+          <div class="flex-1 rounded-3xl border border-white/10 bg-[#1a1e2b]/95 p-6 sm:p-8 backdrop-blur">
+            <div class="mb-8 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <div class="flex flex-wrap items-center gap-3 text-sm text-white/60">
                 <span class="inline-flex items-center gap-2">
-                  <span
-                    class={["w-3 h-3 rounded-full", @status == :running && "animate-pulse"]}
-                    style={
-                      if @status == :running do
-                        "background-color: #b4be82; box-shadow: 0 0 14px #b4be82;"
-                      else
-                        "background-color: #6b7089;"
-                      end
-                    }
-                  >
-                  </span>
-                  <span class="capitalize" style="color: #c6c8d1;">{@status}</span>
+                  <span class={[
+                    "inline-flex h-3 w-3 rounded-full transition-all duration-300",
+                    @status == :running && "bg-[#b4be82]",
+                    @status != :running && "bg-[#6b7089]/80"
+                  ]} />
+                  <span class="text-base font-semibold capitalize text-white">{@status}</span>
                 </span>
-                <span class="font-mono" style="color: #84a0c6;">
+                <span class="font-mono text-sm text-[#84a0c6]">
                   {String.pad_leading(Integer.to_string(@message_count), 2, "0")}
                 </span>
-                <span>messages sent</span>
+                <span class="uppercase tracking-[0.28em] text-white/40">messages sent</span>
               </div>
 
               <button
                 phx-click={if @status == :running, do: "stop_demo", else: "start_demo"}
-                class="inline-flex flex-shrink-0 items-center justify-center gap-2 rounded-lg px-5 py-1.5 text-sm font-semibold uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:justify-self-end"
-                style={
-                  if @status == :running do
-                    "background-color: #e27878; color: #161821; box-shadow: 0 16px 32px rgba(226, 120, 120, 0.2);"
-                  else
-                    "background: linear-gradient(135deg, #84a0c6, #89b8c2); color: #161821; box-shadow: 0 16px 32px rgba(132, 160, 198, 0.2);"
-                  end
-                }
+                class={[
+                  "inline-flex flex-shrink-0 items-center justify-center gap-2 rounded-xl px-6 py-2 text-sm font-semibold uppercase tracking-[0.18em] transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#84a0c6] focus-visible:ring-offset-[#1a1e2b]",
+                  @status == :running &&
+                    "bg-[#e27878] text-[#11131c]",
+                  @status != :running &&
+                    "bg-gradient-to-r from-[#89b8c2]/90 to-[#84a0c6]/90 text-slate-900 hover:scale-[1.02]"
+                ]}
               >
                 {if @status == :running, do: "Stop", else: "Start"}
               </button>
             </div>
 
-            <div class="mb-2 sm:mb-3">
+            <div class="relative h-[380px] rounded-3xl border border-white/10 bg-[#11131c]/70">
               <div
-                class="relative w-full rounded-lg"
-                style="height: 320px; background-color: #1e2132; border: 1px solid #6b7089;"
+                :for={process <- @processes}
+                class="absolute -translate-x-1/2 -translate-y-1/2 transform transition-all duration-300"
+                style={"left: #{process.x}%; top: #{process.y}%;"}
               >
                 <div
-                  :for={process <- @processes}
-                  class="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300"
-                  style={"left: #{process.x}%; top: #{process.y}%;"}
+                  class="flex h-16 w-16 items-center justify-center rounded-full border-2 text-sm font-semibold text-white"
+                  style={"background-color: #{process.color}; border-color: #{process.color};"}
                 >
-                  <div
-                    class="w-16 h-16 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-lg border-2"
-                    style={"background-color: #{process.color}; border-color: #{process.color}; box-shadow: 0 0 20px #{process.color}40;"}
-                  >
-                    {String.slice(process.name, -1, 1)}
-                  </div>
-                  <div class="text-center mt-2 text-xs" style="color: #c6c8d1;">
-                    {process.name}
-                  </div>
+                  {String.slice(process.name, -1, 1)}
                 </div>
+                <div class="mt-2 text-center text-xs text-white/70">
+                  {process.name}
+                </div>
+              </div>
 
+              <div
+                :for={{message, position} <- @message_positions}
+                id={"message-#{message.id}"}
+                class="absolute -translate-x-1/2 -translate-y-1/2 transform"
+                style={"left: #{position.x}%; top: #{position.y}%; transition: all #{animation_frame_seconds()}s linear;"}
+              >
                 <div
-                  :for={{message, position} <- @message_positions}
-                  id={"message-#{message.id}"}
-                  class="absolute transform -translate-x-1/2 -translate-y-1/2"
-                  style={"left: #{position.x}%; top: #{position.y}%; transition: all #{animation_frame_seconds()}s linear;"}
+                  class="h-3 w-3 animate-pulse rounded-full"
+                  style={"background-color: #{message_color(message.type)};"}
                 >
-                  <div
-                    class="w-3 h-3 rounded-full animate-pulse"
-                    style={"background-color: #{message_color(message.type)}; box-shadow: 0 0 10px #{message_color(message.type)};"}
-                  >
-                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="mt-3 sm:mt-4">
-              <div class="rounded-lg border border-[#1e2132] bg-[#1e2132]/80 p-6 shadow-inner backdrop-blur">
-                <div class="flex items-center justify-between gap-3">
-                  <h4 class="text-lg font-semibold" style="color: #c6c8d1;">Recent Messages</h4>
-                  <span class="text-xs uppercase tracking-[0.35em]" style="color: #6b7089;">
-                    Total {@message_count}
-                  </span>
+            <div class="mt-8 rounded-3xl border border-white/10 bg-[#1a1e2b] p-6">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <h4 class="text-lg font-semibold text-white">Recent Messages</h4>
+                <span class="text-xs uppercase tracking-[0.35em] text-white/45">
+                  Total {@message_count}
+                </span>
+              </div>
+              <div class="mt-4 max-h-64 space-y-3 overflow-y-auto pr-2">
+                <div
+                  :if={Enum.empty?(@messages)}
+                  class="rounded-2xl border border-dashed border-white/10 bg-transparent p-5 text-center text-sm text-white/50"
+                >
+                  Messages will appear.
                 </div>
-                <div class="mt-4 max-h-56 overflow-y-auto space-y-2 pr-1">
+                <div
+                  :for={message <- Enum.take(@messages, 3)}
+                  class="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/5 px-4 py-3 text-sm text-white/80 transition-colors"
+                >
                   <div
-                    :if={Enum.empty?(@messages)}
-                    class="rounded-lg border border-dashed border-[#2e3244] p-4 text-sm text-center"
-                    style="color: #6b7089;"
+                    class="h-2 w-2 rounded-full"
+                    style={"background-color: #{message_color(message.type)};"}
                   >
-                    Messages will appear.
                   </div>
-                  <div
-                    :for={message <- Enum.take(@messages, 3)}
-                    class="flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors"
-                    style="background-color: rgba(180, 190, 130, 0.05);"
-                  >
-                    <div
-                      class="w-2 h-2 rounded-full"
-                      style={"background-color: #{message_color(message.type)};"}
+                  <span class="space-x-1">
+                    <span
+                      class="font-medium"
+                      style={"color: #{get_process_by_id(@processes, message.from).color};"}
                     >
-                    </div>
-                    <span style="color: #c6c8d1;">
-                      <span style="color: #{get_process_by_id(@processes, message.from).color};">
-                        {get_process_by_id(@processes, message.from).name}
-                      </span>
-                      →
-                      <span style="color: #{get_process_by_id(@processes, message.to).color};">
-                        {get_process_by_id(@processes, message.to).name}
-                      </span>
-                      :
-                      <span style="color: #{message_color(message.type)}; text-transform: capitalize;">
-                        {message.type}
-                      </span>
+                      {get_process_by_id(@processes, message.from).name}
                     </span>
-                  </div>
+                    <span class="text-white/40">→</span>
+                    <span
+                      class="font-medium"
+                      style={"color: #{get_process_by_id(@processes, message.to).color};"}
+                    >
+                      {get_process_by_id(@processes, message.to).name}
+                    </span>
+                    <span class="text-white/40">·</span>
+                    <span
+                      class="uppercase tracking-[0.25em]"
+                      style={"color: #{message_color(message.type)};"}
+                    >
+                      {message.type}
+                    </span>
+                  </span>
                 </div>
               </div>
             </div>
