@@ -13,6 +13,8 @@ defmodule Gem.Application do
       {Ecto.Migrator, repos: Application.fetch_env!(:gem, :ecto_repos), skip: skip_migrations?()},
       {DNSCluster, query: Application.get_env(:gem, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Gem.PubSub},
+      Gem.Demo.Registry,
+      Gem.Demo.Supervisor,
       # Start a worker by calling: Gem.Worker.start_link(arg)
       # {Gem.Worker, arg},
       # Start to serve requests, typically the last entry

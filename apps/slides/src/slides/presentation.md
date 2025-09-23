@@ -137,6 +137,27 @@ In Erlang VM, all code runs inside lightweight threads called **processes**. We 
 
 --
 
+<!-- Slide 2.10 -->
+
+## Fault Tolerance 🛡️
+
+<iframe data-src="/demo/fault-tolerance"
+        data-lazy
+        width="100%"
+        height="720"
+        frameborder="0"
+        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
+</iframe>
+
+<ul>
+<li class="fragment" data-fragment-index="1"><strong>Interactive supervision tree</strong> - Crash workers and watch restarts in real time</li>
+<li class="fragment" data-fragment-index="2"><strong>Configurable strategies</strong> - Toggle <code>:one_for_one</code>, <code>:one_for_all</code>, and <code>:rest_for_one</code></li>
+<li class="fragment" data-fragment-index="3"><strong>Restart semantics</strong> - Contrast <code>:permanent</code>, <code>:temporary</code>, and <code>:transient</code> workers</li>
+<li class="fragment" data-fragment-index="4"><strong>Health telemetry</strong> - Uptime, crash counters, and event log never blink</li>
+</ul>
+
+Note: Drive the crash narrative using docs/fault-tolerance-demo-plan.md so every interaction lands the fault-tolerance story, and fall back to the code snippet if the iframe is unavailable.
+
 ---
 
 ## The Numbers Don't Lie
