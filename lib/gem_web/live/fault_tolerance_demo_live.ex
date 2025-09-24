@@ -8,6 +8,9 @@ defmodule GemWeb.FaultToleranceDemoLive do
   alias Gem.Demo.FaultTolerance.Supervisor
   alias Gem.Demo.Supervisor, as: DemoSupervisor
 
+  @typep stop_reason :: :manual_stop | :strategy_change | :shutdown
+  @typep event_type :: :system | :action | :error | :warning | :info
+
   @canvas_nodes [
     %{key: :supervisor, name: "Root Supervisor", x: 50, y: 25, color: "#e2a478"},
     %{key: :api, name: "API Worker", x: 18, y: 84, color: APIWorker.metadata().color},
@@ -287,10 +290,10 @@ defmodule GemWeb.FaultToleranceDemoLive do
     end
   end
 
+  @spec stop_message(stop_reason()) :: String.t()
   defp stop_message(:manual_stop), do: "System powered down"
   defp stop_message(:strategy_change), do: "Restarting with new strategy"
   defp stop_message(:shutdown), do: "Demo session terminated"
-  defp stop_message(_), do: "System stopped"
 
   ## Worker state helpers
 
@@ -506,19 +509,19 @@ defmodule GemWeb.FaultToleranceDemoLive do
     end
   end
 
+  @spec event_icon(event_type()) :: String.t()
   defp event_icon(:system), do: "hero-bolt"
   defp event_icon(:action), do: "hero-play"
   defp event_icon(:error), do: "hero-x-circle"
   defp event_icon(:warning), do: "hero-exclamation-triangle"
   defp event_icon(:info), do: "hero-information-circle"
-  defp event_icon(_), do: "hero-circle-stack"
 
+  @spec event_accent(event_type()) :: String.t()
   defp event_accent(:system), do: "from-amber-400/80 to-orange-500/60"
   defp event_accent(:action), do: "from-blue-400/80 to-cyan-500/60"
   defp event_accent(:error), do: "from-red-500/80 to-pink-500/70"
   defp event_accent(:warning), do: "from-amber-400/80 to-red-400/60"
   defp event_accent(:info), do: "from-emerald-400/80 to-teal-500/70"
-  defp event_accent(_), do: "from-slate-500/60 to-slate-700/50"
 
   defp parse_strategy(value) do
     case value do

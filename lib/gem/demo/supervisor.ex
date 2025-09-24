@@ -36,9 +36,8 @@ defmodule Gem.Demo.Supervisor do
   @spec stop_tree(pid()) :: :ok | {:error, term()}
   def stop_tree(pid) when is_pid(pid) do
     case DynamicSupervisor.terminate_child(__MODULE__, pid) do
-      :ok -> :ok
       {:error, :not_found} -> :ok
-      other -> other
+      result -> result
     end
   end
 

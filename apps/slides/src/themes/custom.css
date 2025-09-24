@@ -127,15 +127,6 @@
 	border: none;
 }
 
-/* IMAGES */
-.reveal section img {
-	margin: 15px 0px;
-	background: rgba(255, 255, 255, 0.12);
-	border: 4px solid var(--r-main-color);
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-	border-radius: 8px;
-}
-
 .reveal section img.plain {
 	border: 0;
 	box-shadow: none;
@@ -295,6 +286,15 @@
 
 .reveal .text-right {
 	text-align: right !important;
+}
+
+/* CONTAINER CLASS FOR DIVS */
+.reveal .container {
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 0 2rem;
+	box-sizing: border-box;
+	width: 100%;
 }
 
 .reveal .highlight {

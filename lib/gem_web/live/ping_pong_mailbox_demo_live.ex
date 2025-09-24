@@ -946,23 +946,23 @@ defmodule GemWeb.PingPongMailboxDemoLive do
             </div>
 
             <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-              <div class="flex flex-col gap-6 rounded-3xl border border-white/10 bg-[#11131c]/65 px-6 py-6 shadow-[0_35px_60px_rgba(9,11,20,0.55)]">
+              <div class="flex flex-col gap-4 rounded-3xl border border-white/10 bg-[#11131c]/65 px-6 py-6 shadow-[0_35px_60px_rgba(9,11,20,0.55)]">
                 <div class="text-xs uppercase tracking-[0.3em] text-white/40">Controls</div>
 
                 <div class="grid gap-4 sm:grid-cols-3">
-                  <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-1">
                     <p class="text-xs uppercase tracking-[0.3em] text-white/40">Messages Sent</p>
                     <p class="mt-2 text-2xl font-semibold text-white">
                       {format_count(@metrics.messages_sent)}
                     </p>
                   </div>
-                  <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-1">
                     <p class="text-xs uppercase tracking-[0.3em] text-white/40">Processed</p>
                     <p class="mt-2 text-2xl font-semibold text-white">
                       {format_count(@metrics.messages_processed)}
                     </p>
                   </div>
-                  <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-1">
                     <p class="text-xs uppercase tracking-[0.3em] text-white/40">Auto Injector</p>
                     <p class={[
                       "mt-2 text-2xl font-semibold",

@@ -1,16 +1,41 @@
 <!-- Slide 1 -->
 
-# Bet on Elixir
+<div class="container">
+<div style="display: flex; align-items: anchor-center;">
+<h1>Bet on Elixir</h1>
+<img src="/images/elixir.png" alt="Elixir Logo" style="height: 8em; top: -30px; right: 70px; position: relative;">
+</div>
+
+<span style="top: -70px; position: relative;">
+Why Elixir should be your next language
+</span>
+
+</div>
 
 Note: Welcome everyone. I'm here to sell you on Elixir and convince you to learn it. This isn't just another programming language presentation.
 
 ---
 
+<!-- Slide 1.1 -->
+
+<div class="container">
+<h2>Hi, I'm Rakshan Shetty</h2>
+
+**Software Engineer @ invideo**
+
+</div>
+
+Note: Quick introduction - I'm Rakshan Shetty, working as a Software Engineer at InVideo. I'm excited to share why I believe Elixir is a language worth betting on.
+
+---
+
 <!-- Slide 2 -->
 
-## What is Elixir?
+<div class="container">
+<h2>What is Elixir?</h2>
 
 **Elixir is a dynamic programming language designed for building scalable, fault-tolerant applications**
+</div>
 
 Note: Before we dive into impressive numbers, let's establish what Elixir actually is. It's not just another web framework - it's a completely different approach to building software.
 
@@ -18,7 +43,8 @@ Note: Before we dive into impressive numbers, let's establish what Elixir actual
 
 <!-- Slide 2.1 -->
 
-## Key Characteristics
+<div class="container">
+<h2>Key Characteristics</h2>
 
 <ul>
 <li class="fragment" data-fragment-index="1">Built on the <strong>Erlang Virtual Machine (BEAM)</strong></li>
@@ -27,12 +53,14 @@ Note: Before we dive into impressive numbers, let's establish what Elixir actual
 <li class="fragment" data-fragment-index="4"><strong>"Let it crash" philosophy</strong></li>
 <li class="fragment" data-fragment-index="5"><strong>Built-in distribution</strong></li>
 </ul>
+</div>
 
 --
 
 <!-- Slide 2.2 -->
 
-## Functional ƛ
+<div class="container">
+<h2>Functional ƛ</h2>
 
 ```elixir
 "Elixir is cool!"
@@ -42,24 +70,28 @@ Note: Before we dive into impressive numbers, let's establish what Elixir actual
 |> String.upcase()
 # => "COOL"
 ```
+</div>
 
 --
 
 <!-- Slide 2.3 -->
 
-## Immutable 🔒
+<div class="container">
+<h2>Immutable 🔒</h2>
 
 ```elixir
 user = %{name: "Alice", status: :inactive}
 new_user = %{user | status: :active}
 # Original user remains unchanged
 ```
+</div>
 
 --
 
 <!-- Slide 2.4 -->
 
-## Pattern Matching ⚡
+<div class="container">
+<h2>Pattern Matching ⚡</h2>
 
 ```elixir
 case fetch_user(id) do
@@ -78,42 +110,50 @@ else
   false -> {:error, "Account inactive"}
 end
 ```
+</div>
 
 --
 
 <!-- Slide 2.5 -->
 
+<div class="container">
 <ul>
 <li class="fragment" data-fragment-index="1"><strong>Polymorphism</strong> via protocols</li>
 <li class="fragment" data-fragment-index="2"><strong>Meta-programming</strong> with macros</li>
 <li class="fragment" data-fragment-index="3">And more...</li>
 </ul>
+</div>
 
 --
 
 <!-- Slide 2.6 -->
 
-## The Three Pillars
+<div class="container">
+<h2>The Three Pillars</h2>
 
 <ul>
 <li class="fragment" data-fragment-index="1"><strong>Concurrency</strong> 🧵</li>
 <li class="fragment" data-fragment-index="2"><strong>Fault Tolerance</strong> 🛡️</li>
 <li class="fragment" data-fragment-index="3"><strong>Distribution</strong> 🌐</li>
 </ul>
+</div>
 
 --
 
 <!-- Slide 2.7 -->
 
-## Concurrency 🧵
+<div class="container">
+<h2>Concurrency 🧵</h2>
 
 In Erlang VM, all code runs inside lightweight threads called **processes**.
+</div>
 
 --
 
 <!-- Slide 2.8 -->
 
-## What are Processes?
+<div class="container">
+<h2>What are Processes?</h2>
 
 <ul>
 <li class="fragment" data-fragment-index="1"><strong>Lightweight</strong> - millions can run concurrently (~2KB each)</li>
@@ -121,12 +161,14 @@ In Erlang VM, all code runs inside lightweight threads called **processes**.
 <li class="fragment" data-fragment-index="3"><strong>Fault-tolerant</strong> - "let it crash" philosophy</li>
 <li class="fragment" data-fragment-index="4"><strong>Preemptively scheduled</strong> - fair execution across processes</li>
 </ul>
+</div>
 
 --
 
 <!-- Slide 2.9 -->
 
-## Basic Process Example
+<div class="container">
+<h2>Basic Process Example</h2>
 
 <div class="r-stack">
 
@@ -187,6 +229,7 @@ end
 </div>
 
 </div>
+</div>
 
 --
 
@@ -205,7 +248,8 @@ end
 
 <!-- Slide 2.11 -->
 
-## Concurrency Features
+<div class="container">
+<h2>Concurrency Features</h2>
 
 <ul>
 <li class="fragment" data-fragment-index="1"><strong>Actor Model</strong> - Isolated processes communicate via messages</li>
@@ -214,6 +258,7 @@ end
 <li class="fragment" data-fragment-index="4"><strong>Message passing</strong> - No shared state, no race conditions</li>
 <li class="fragment" data-fragment-index="5"><strong>Fault isolation</strong> - Process crashes don't affect others</li>
 </ul>
+</div>
 
 Note: Not OS threads - they're lightweight actors (2KB memory footprint), Cheap to create and destroy. Millions can run concurrently on a single machine. Isolated - one process crash doesn't affect others.
 
@@ -249,7 +294,8 @@ Note: Watch both mailboxes fill while each process drains independently. The ori
 
 <!-- Slide 2.13 -->
 
-## Fault Tolerance 🛡️
+<div class="container">
+<h2>Fault Tolerance 🛡️</h2>
 
 <ul>
 <li class="fragment" data-fragment-index="1"><strong>The "Let It Crash" Philosophy</strong> - Embrace failures and recover gracefully</li>
@@ -258,6 +304,7 @@ Note: Watch both mailboxes fill while each process drains independently. The ori
 <li class="fragment" data-fragment-index="4"><strong>Restart Strategy</strong> - <code>:one_for_one</code>, <code>:one_for_all</code>, and <code>:rest_for_one</code></li>
 <li class="fragment" data-fragment-index="5"><strong>Restart Type</strong> - <code>:permanent</code>, <code>:temporary</code>, and <code>:transient</code></li>
 </ul>
+</div>
 
 Note: The "Let It Crash" Philosophy. Each level decides how to handle failures. System stays running even with component failures. Self-healing - processes restart with clean state. It's a fundamentally different way of building robust systems.
 
@@ -279,7 +326,8 @@ Note: The "Let It Crash" Philosophy. Each level decides how to handle failures. 
 
 <!-- Slide 2.15 -->
 
-## Built-in Distribution 🌐
+<div class="container">
+<h2>Built-in Distribution 🌐</h2>
 
 ```elixir
 # Connect nodes across machines
@@ -288,5 +336,6 @@ Node.connect(:"app@server2.com")
 # Send messages across the network
 send({:worker, :"app@server2.com"}, {:process_data, data})
 ```
+</div>
 
 Note: Distribution isn't an afterthought - it's built into the language. The same message passing that works locally works across the network.
