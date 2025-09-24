@@ -314,16 +314,6 @@ defmodule GemWeb.PingPongDemoLive do
                 </span>
                 <span class="uppercase tracking-[0.28em] text-white/40">messages sent</span>
               </div>
-              <div class="flex items-center justify-end">
-                <span class="relative inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/60">
-                  <span class="relative flex h-3 w-3">
-                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#84a0c6]/50">
-                    </span>
-                    <span class="relative inline-flex h-3 w-3 rounded-full bg-[#84a0c6]"></span>
-                  </span>
-                  Auto Mode
-                </span>
-              </div>
             </div>
 
             <div class="relative h-[380px] rounded-3xl border border-white/10 bg-[#11131c]/70">

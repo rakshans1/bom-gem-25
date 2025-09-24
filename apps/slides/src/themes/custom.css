@@ -381,6 +381,10 @@
 .reveal .hljs {
 	font-family: var(--r-code-font) !important;
 }
+
+.reveal pre code {
+	max-height: unset !important;
+}
 .reveal .slides section.fullscreen {
 	width: 100% !important;
 	height: 100vh !important;
