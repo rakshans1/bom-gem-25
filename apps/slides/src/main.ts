@@ -3,6 +3,7 @@ import Reveal from "reveal.js";
 import Highlight from "reveal.js/plugin/highlight/highlight.esm.js";
 import Markdown from "reveal.js/plugin/markdown/markdown.esm.js";
 import Notes from "reveal.js/plugin/notes/notes.esm.js";
+import Mermaid from "reveal.js-mermaid-plugin";
 import "reveal.js/dist/reveal.css";
 import "reveal.js/plugin/highlight/monokai.css";
 import "./themes/custom.css";
@@ -17,7 +18,7 @@ const config: Options = {
 	progress: true,
 	navigationMode: "linear",
 	transition: "slide",
-	plugins: [Markdown, Highlight, Notes],
+	plugins: [Markdown, Highlight, Notes, Mermaid],
 	markdown: {
 		smartypants: true,
 	},

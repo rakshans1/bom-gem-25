@@ -35,6 +35,7 @@ Note: Quick introduction - I'm Rakshan Shetty, working as a Software Engineer at
 <h2>What is Elixir?</h2>
 
 **Elixir is a dynamic programming language designed for building scalable, fault-tolerant applications**
+
 </div>
 
 Note: Before we dive into impressive numbers, let's establish what Elixir actually is. It's not just another web framework - it's a completely different approach to building software.
@@ -70,6 +71,7 @@ Note: Before we dive into impressive numbers, let's establish what Elixir actual
 |> String.upcase()
 # => "COOL"
 ```
+
 </div>
 
 --
@@ -84,6 +86,7 @@ user = %{name: "Alice", status: :inactive}
 new_user = %{user | status: :active}
 # Original user remains unchanged
 ```
+
 </div>
 
 --
@@ -110,6 +113,7 @@ else
   false -> {:error, "Account inactive"}
 end
 ```
+
 </div>
 
 --
@@ -146,6 +150,7 @@ end
 <h2>Concurrency 🧵</h2>
 
 In Erlang VM, all code runs inside lightweight threads called **processes**.
+
 </div>
 
 --
@@ -277,6 +282,207 @@ Note: Not OS threads - they're lightweight actors (2KB memory footprint), Cheap 
 
 --
 
+<!-- Slide 2.12b -->
+
+<div class="container">
+<h2>Process Skeleton</h2>
+
+<div style="display: flex; gap: 8rem; align-items: flex-start;">
+
+<div style="flex: 1; margin-right: 2rem;">
+
+```elixir
+def start(args), do:
+  spawn(Server, :init, [args], [])
+
+def init(args) do
+  state = initialise_state(args)
+  loop(state)
+end
+
+def loop(state) do
+  receive do
+    {:handle, msg} ->
+      state = handle(msg, state)
+      loop(state)
+    :stop -> terminate(state)
+  end
+end
+
+def terminate(state), do: clean_up(state)
+```
+
+</div>
+
+<div style="flex: 1;">
+
+<div class="fragment" data-fragment-index="1">
+<div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true }}}%%
+flowchart TD
+    A[Start] --> B[Initialise]
+    B --> C[Loop]
+    C --> C
+    E[Stop] --> C
+    C --> D[Terminate]
+
+    style A fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000,font-size:20px,padding:15px
+    style B fill:#f3e5f5,stroke:#4a148c,stroke-width:3px,color:#000,font-size:20px,padding:15px
+    style C fill:#e8f5e8,stroke:#1b5e20,stroke-width:3px,color:#000,font-size:20px,padding:15px
+    style D fill:#fff3e0,stroke:#e65100,stroke-width:3px,color:#000,font-size:20px,padding:15px
+    style E fill:#ffebee,stroke:#b71c1c,stroke-width:3px,color:#000,font-size:20px,padding:15px
+
+</div>
+<style>
+.mermaid {
+    margin-top: 20px;
+}
+.mermaid svg {
+    width: 320px !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
+
+</div>
+</div>
+
+</div>
+</div>
+
+Note: This shows the basic skeleton of an Elixir process - every process follows this pattern of initialization, looping to handle messages, and graceful termination.
+
+--
+
+<!-- Slide 2.12c -->
+
+<div class="container">
+<h2>GenServer: Stateful Server Processes</h2>
+
+<ul>
+<li class="fragment" data-fragment-index="1"><strong>OTP Behavior</strong> - Standardized server pattern</li>
+<li class="fragment" data-fragment-index="2"><strong>State Management</strong> - Maintains state between calls</li>
+<li class="fragment" data-fragment-index="3"><strong>Synchronous & Asynchronous</strong> - call/cast operations</li>
+<li class="fragment" data-fragment-index="4"><strong>Supervision Ready</strong> - Integrates with supervision trees</li>
+</ul>
+</div>
+
+Note: GenServer is a behavioral pattern that abstracts the common server loop. It handles all the boilerplate for you - initialization, message handling, state management, and graceful shutdown.
+
+--
+
+<!-- Slide 2.12d -->
+
+<div class="container" style="max-width: 100%; width: 100%;">
+<style>
+.container pre {
+    width: 100% !important;
+    max-width: none !important;
+    font-size: 0.45em !important;
+}
+</style>
+<div class="r-stack">
+
+<div class="fragment fade-out" data-fragment-index="4">
+
+<div>
+<div class="fragment" data-fragment-index="1">
+
+```elixir
+defmodule Counter do
+  use GenServer
+
+  def start_link(initial_value \\ 0) do
+    GenServer.start_link(__MODULE__, initial_value)
+  end
+end
+```
+
+</div>
+</div>
+
+<div>
+<div class="fragment" data-fragment-index="2">
+
+```elixir
+  # Client API
+  def get() do
+    GenServer.call(__MODULE__, :get)
+  end
+
+  def increment() do
+    GenServer.cast(__MODULE__, :increment)
+  end
+```
+
+</div>
+</div>
+
+<div>
+<div class="fragment" data-fragment-index="3">
+
+```elixir
+  # Server Callbacks
+  def init(initial_value) do
+    {:ok, initial_value}
+  end
+
+  def handle_call(:get, _from, state) do
+    {:reply, state, state}
+  end
+
+  def handle_cast(:increment, state) do
+    {:noreply, state + 1}
+  end
+```
+
+</div>
+</div>
+</div>
+
+<div class="fragment fade-in" data-fragment-index="4">
+
+```elixir
+defmodule Counter do
+  use GenServer
+
+  def start_link(initial_value \\ 0) do
+    GenServer.start_link(__MODULE__, initial_value, name: __MODULE__)
+  end
+
+  # Client API
+  def get() do
+    GenServer.call(__MODULE__, :get)
+  end
+
+  def increment() do
+    GenServer.cast(__MODULE__, :increment)
+  end
+
+  # Server Callbacks
+  def init(initial_value) do
+    {:ok, initial_value}
+  end
+
+  def handle_call(:get, _from, state) do
+    {:reply, state, state}
+  end
+
+  def handle_cast(:increment, state) do
+    {:noreply, state + 1}
+  end
+end
+```
+
+</div>
+
+</div>
+</div>
+
+Note: This shows the separation between client API (what callers use) and server callbacks (internal implementation). GenServer handles all the message passing and state management for us.
+
+--
+
 <!-- Slide 2.12a -->
 
 <!-- .slide: class="fullscreen" -->
@@ -289,6 +495,113 @@ Note: Not OS threads - they're lightweight actors (2KB memory footprint), Cheap 
 </iframe>
 
 Note: Watch both mailboxes fill while each process drains independently. The original ping-pong demo is still available on the previous slide for a lightweight comparison.
+
+--
+
+<!-- Slide 2.12e -->
+
+<div class="container">
+<h2>Agent: Simple State Storage</h2>
+
+<ul>
+<li class="fragment" data-fragment-index="1"><strong>Simplified GenServer</strong> - Less boilerplate for state</li>
+<li class="fragment" data-fragment-index="2"><strong>Function-based</strong> - Use functions to get/update state</li>
+<li class="fragment" data-fragment-index="3"><strong>Perfect for simple state</strong> - Counters, caches, configs</li>
+<li class="fragment" data-fragment-index="4"><strong>Built on GenServer</strong> - Same reliability, less code</li>
+</ul>
+</div>
+
+Note: Agent is perfect when you need simple state storage without the complexity of GenServer callbacks. It's built on GenServer but provides a much simpler API for common use cases.
+
+--
+
+<!-- Slide 2.12f -->
+
+<div class="container">
+<div class="fragment" data-fragment-index="1">
+
+```elixir
+# Start an agent
+{:ok, agent} = Agent.start_link(fn -> 0 end)
+
+# Or with a name
+Agent.start_link(fn -> 0 end, name: :counter)
+```
+
+</div>
+
+<div class="fragment" data-fragment-index="2">
+
+```elixir
+# Get current state
+count = Agent.get(:counter, fn state -> state end)
+```
+
+</div>
+
+<div class="fragment" data-fragment-index="3">
+
+```elixir
+# Update state
+Agent.update(:counter, fn state -> state + 1 end)
+```
+
+</div>
+
+<div class="fragment" data-fragment-index="4">
+
+```elixir
+# Stop the agent
+Agent.stop(:counter)
+```
+
+</div>
+
+</div>
+
+Note: Agent provides a clean, functional API for state management. No need for handle_call or handle_cast - just pass functions that transform the state.
+
+--
+
+<!-- Slide 2.12g -->
+
+<div class="container">
+<h2>When to Use What? 🤔</h2>
+
+<table style="width: 100%; margin-top: 2rem; font-size: 0.8em;">
+<thead>
+<tr>
+<th><strong>Pattern</strong></th>
+<th><strong>Use Case</strong></th>
+<th><strong>Complexity</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Process</strong></td>
+<td>Custom concurrency patterns, one-off tasks</td>
+<td>Low-level, more control</td>
+<td>Background workers, custom protocols</td>
+</tr>
+<tr>
+<td><strong>GenServer</strong></td>
+<td>Stateful services with business logic</td>
+<td>More boilerplate, full featured</td>
+<td>Database connections, game state, APIs</td>
+</tr>
+<tr>
+<td><strong>Agent</strong></td>
+<td>Simple state storage and retrieval</td>
+<td>Minimal boilerplate</td>
+<td>Counters, caches, configuration</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+Note: This comparison helps you choose the right abstraction level. Start simple with Agent, move to GenServer when you need more control, and drop to raw processes only when you need maximum flexibility.
 
 --
 
@@ -336,6 +649,7 @@ Node.connect(:"app@server2.com")
 # Send messages across the network
 send({:worker, :"app@server2.com"}, {:process_data, data})
 ```
+
 </div>
 
 Note: Distribution isn't an afterthought - it's built into the language. The same message passing that works locally works across the network.
