@@ -24,11 +24,35 @@ defmodule GemWeb.PingPongDemoLive do
       |> assign(:simulation_pid, nil)
       |> assign(:animation_timer_ref, nil)
 
+    socket =
+      if connected?(socket) do
+        start_demo(socket)
+      else
+        socket
+      end
+
     {:ok, socket}
   end
 
   @impl true
   def handle_event("start_demo", _params, socket) do
+    {:noreply, start_demo(socket)}
+  end
+
+  @impl true
+  def handle_event("stop_demo", _params, socket) do
+    stop_simulation(socket.assigns.simulation_pid)
+
+    {:noreply,
+     socket
+     |> cancel_animation_tick()
+     |> assign(:status, :idle)
+     |> assign(:messages, [])
+     |> assign(:message_positions, [])
+     |> assign(:simulation_pid, nil)}
+  end
+
+  defp start_demo(socket) do
     topology = socket.assigns.topology
     speed = socket.assigns.speed
     processes = create_processes(topology)
@@ -45,20 +69,7 @@ defmodule GemWeb.PingPongDemoLive do
 
     simulation_pid = start_ping_pong_simulation(processes, topology, speed)
 
-    {:noreply, assign(socket, :simulation_pid, simulation_pid)}
-  end
-
-  @impl true
-  def handle_event("stop_demo", _params, socket) do
-    stop_simulation(socket.assigns.simulation_pid)
-
-    {:noreply,
-     socket
-     |> cancel_animation_tick()
-     |> assign(:status, :idle)
-     |> assign(:messages, [])
-     |> assign(:message_positions, [])
-     |> assign(:simulation_pid, nil)}
+    assign(socket, :simulation_pid, simulation_pid)
   end
 
   @impl true
@@ -190,21 +201,24 @@ defmodule GemWeb.PingPongDemoLive do
     end)
   end
 
-  defp hub_messages(_parent, [_hub], _interval), do: :ok
-  defp hub_messages(_parent, [], _interval), do: :ok
+  defp hub_messages(parent, processes, interval) do
+    case processes do
+      [_hub] ->
+        :ok
 
-  defp hub_messages(parent, [hub | workers], interval) do
-    worker = Enum.random(workers)
-    send(parent, {:new_message, hub.id, worker.id, "task"})
-    Process.sleep(interval)
+      [hub | workers] ->
+        worker = Enum.random(workers)
+        send(parent, {:new_message, hub.id, worker.id, "task"})
+        Process.sleep(interval)
 
-    send(parent, {:new_message, worker.id, hub.id, "result"})
-    Process.sleep(interval)
+        send(parent, {:new_message, worker.id, hub.id, "result"})
+        Process.sleep(interval)
 
-    if length(workers) >= 2 and Enum.random(1..3) == 1 do
-      [w1, w2] = Enum.take_random(workers, 2)
-      send(parent, {:new_message, w1.id, w2.id, "gossip"})
-      Process.sleep(interval)
+        if length(workers) >= 2 and Enum.random(1..3) == 1 do
+          [w1, w2] = Enum.take_random(workers, 2)
+          send(parent, {:new_message, w1.id, w2.id, "gossip"})
+          Process.sleep(interval)
+        end
     end
   end
 
@@ -300,19 +314,16 @@ defmodule GemWeb.PingPongDemoLive do
                 </span>
                 <span class="uppercase tracking-[0.28em] text-white/40">messages sent</span>
               </div>
-
-              <button
-                phx-click={if @status == :running, do: "stop_demo", else: "start_demo"}
-                class={[
-                  "inline-flex flex-shrink-0 items-center justify-center gap-2 rounded-xl px-6 py-2 text-sm font-semibold uppercase tracking-[0.18em] transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#84a0c6] focus-visible:ring-offset-[#1a1e2b]",
-                  @status == :running &&
-                    "bg-[#e27878] text-[#11131c]",
-                  @status != :running &&
-                    "bg-gradient-to-r from-[#89b8c2]/90 to-[#84a0c6]/90 text-slate-900 hover:scale-[1.02]"
-                ]}
-              >
-                {if @status == :running, do: "Stop", else: "Start"}
-              </button>
+              <div class="flex items-center justify-end">
+                <span class="relative inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/60">
+                  <span class="relative flex h-3 w-3">
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#84a0c6]/50">
+                    </span>
+                    <span class="relative inline-flex h-3 w-3 rounded-full bg-[#84a0c6]"></span>
+                  </span>
+                  Auto Mode
+                </span>
+              </div>
             </div>
 
             <div class="relative h-[380px] rounded-3xl border border-white/10 bg-[#11131c]/70">

@@ -132,9 +132,6 @@ defmodule GemWeb.ProcessDemoLive do
                   <p class="text-2xl font-semibold text-white">Choose how many processes to spawn</p>
                 </div>
                 <div class="space-y-4">
-                  <p class="text-sm text-white/70">
-                    Stress test BEAM scheduling by fanning out to thousands of lightweight processes.
-                  </p>
                   <.form for={@form} id="process-form" phx-change="select_count">
                     <label class="block text-xs font-semibold uppercase tracking-[0.25em] text-white/50 mb-2">
                       Number of processes
@@ -247,7 +244,7 @@ defmodule GemWeb.ProcessDemoLive do
                     <span class="font-mono text-base text-[#89b8c2]">
                       {format_number(@process_count)}
                     </span>
-                    lightweight processes
+                    processes
                   </span>
                 </li>
                 <li class="flex items-start gap-3">
