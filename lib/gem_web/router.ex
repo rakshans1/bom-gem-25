@@ -22,6 +22,7 @@ defmodule GemWeb.Router do
     get "/slides/*path", SlidesController, :app
     live "/demo/processes", ProcessDemoLive
     live "/demo/ping-pong", PingPongDemoLive
+    live "/demo/ping-pong-mailbox", PingPongMailboxDemoLive
     live "/demo/fault-tolerance", FaultToleranceDemoLive
   end
 
