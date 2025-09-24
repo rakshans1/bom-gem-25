@@ -93,13 +93,104 @@ end
 
 <!-- Slide 2.6 -->
 
-## Concurrency 🧵
+## The Three Pillars
 
-In Erlang VM, all code runs inside lightweight threads called **processes**. We can literally create millions of them.
+<ul>
+<li class="fragment" data-fragment-index="1"><strong>Concurrency</strong> 🧵</li>
+<li class="fragment" data-fragment-index="2"><strong>Fault Tolerance</strong> 🛡️</li>
+<li class="fragment" data-fragment-index="3"><strong>Distribution</strong> 🌐</li>
+</ul>
 
 --
 
 <!-- Slide 2.7 -->
+
+## Concurrency 🧵
+
+In Erlang VM, all code runs inside lightweight threads called **processes**.
+
+--
+
+<!-- Slide 2.8 -->
+
+## What are Processes?
+
+<ul>
+<li class="fragment" data-fragment-index="1"><strong>Lightweight</strong> - millions can run concurrently (~2KB each)</li>
+<li class="fragment" data-fragment-index="2"><strong>Isolated</strong> - share nothing, communicate via messages</li>
+<li class="fragment" data-fragment-index="3"><strong>Fault-tolerant</strong> - "let it crash" philosophy</li>
+<li class="fragment" data-fragment-index="4"><strong>Preemptively scheduled</strong> - fair execution across processes</li>
+</ul>
+
+--
+
+<!-- Slide 2.9 -->
+
+## Basic Process Example
+
+<div class="r-stack">
+
+<div class="fragment fade-out" data-fragment-index="4">
+
+<div class="fragment" data-fragment-index="1">
+
+```elixir
+# Spawn a process
+pid = spawn(fn -> end)
+```
+
+</div>
+
+<div class="fragment" data-fragment-index="2">
+
+```elixir
+# Send messages
+send(pid, {:hello, self()})
+send(pid, {:add, 10, 20, self()})
+```
+
+</div>
+
+<div class="fragment" data-fragment-index="3">
+
+```elixir
+# Receive Messages
+receive do
+  {:hi, from} -> IO.puts("Got greeting from #{inspect(from)}")
+  {:result, sum} -> IO.puts("Sum is #{sum}")
+end
+```
+
+</div>
+</div>
+
+<div class="fragment fade-in" data-fragment-index="4">
+
+```elixir
+pid = spawn(fn ->
+  receive do
+    {:hello, caller} ->
+      send(caller, {:hi, self()})
+    {:add, a, b, caller} ->
+      send(caller, {:result, a + b})
+  end
+end)
+
+send(pid, {:hello, self()})
+
+receive do
+  {:hi, from} -> IO.puts("Got greeting from #{inspect(from)}")
+  {:result, sum} -> IO.puts("Sum is #{sum}")
+end
+```
+
+</div>
+
+</div>
+
+--
+
+<!-- Slide 2.10 -->
 
 <!-- .slide: class="fullscreen" -->
 <iframe data-src="/demo/processes"
@@ -112,7 +203,7 @@ In Erlang VM, all code runs inside lightweight threads called **processes**. We 
 
 --
 
-<!-- Slide 2.8 -->
+<!-- Slide 2.11 -->
 
 ## Concurrency Features
 
@@ -128,7 +219,7 @@ Note: Not OS threads - they're lightweight actors (2KB memory footprint), Cheap 
 
 --
 
-<!-- Slide 2.9 -->
+<!-- Slide 2.12 -->
 
 <!-- .slide: class="fullscreen" -->
 <iframe data-src="/demo/ping-pong"
@@ -141,7 +232,22 @@ Note: Not OS threads - they're lightweight actors (2KB memory footprint), Cheap 
 
 --
 
-<!-- Slide 2.10 -->
+<!-- Slide 2.12a -->
+
+<!-- .slide: class="fullscreen" -->
+<iframe data-src="/demo/ping-pong-mailbox"
+        data-lazy
+        width="100%"
+        height="100%"
+        frameborder="0"
+        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
+</iframe>
+
+Note: Watch both mailboxes fill while each process drains independently. The original ping-pong demo is still available on the previous slide for a lightweight comparison.
+
+--
+
+<!-- Slide 2.13 -->
 
 ## Fault Tolerance 🛡️
 
@@ -157,7 +263,7 @@ Note: The "Let It Crash" Philosophy. Each level decides how to handle failures. 
 
 --
 
-<!-- Slide 2.11 -->
+<!-- Slide 2.14 -->
 <!-- .slide: class="fullscreen" -->
 <iframe data-src="/demo/fault-tolerance"
         data-lazy
@@ -171,9 +277,9 @@ Note: The "Let It Crash" Philosophy. Each level decides how to handle failures. 
 
 --
 
-## Built-in Distribution
+<!-- Slide 2.15 -->
 
-<!-- Slide 2.12 -->
+## Built-in Distribution 🌐
 
 ```elixir
 # Connect nodes across machines

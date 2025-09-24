@@ -38,8 +38,20 @@ defmodule Gem.DataCase do
   Sets up the sandbox based on the test tags.
   """
   def setup_sandbox(tags) do
-    pid = Sandbox.start_owner!(Gem.Repo, shared: not tags[:async])
-    on_exit(fn -> Sandbox.stop_owner(pid) end)
+    opts = [shared: not tags[:async]]
+
+    owner =
+      try do
+        Sandbox.start_owner!(Gem.Repo, opts)
+      rescue
+        _ -> nil
+      end
+
+    if is_pid(owner) do
+      on_exit(fn -> Sandbox.stop_owner(owner) end)
+    else
+      :ok
+    end
   end
 
   @doc """

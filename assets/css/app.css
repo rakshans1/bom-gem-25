@@ -103,3 +103,59 @@
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+
+@keyframes highway-right {
+  from {
+    transform: translate(0, -50%);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(var(--travel-distance), -50%);
+    opacity: 0;
+  }
+}
+
+@keyframes highway-left {
+  from {
+    transform: translate(0, -50%);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(calc(var(--travel-distance) * -1), -50%);
+    opacity: 0;
+  }
+}
+
+@keyframes mailbox-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mailbox-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+.mailbox-item {
+  animation: mailbox-in 0.24s ease-out forwards;
+}
+
+.mailbox-item-out {
+  animation: mailbox-out 0.18s ease-in forwards;
+}
