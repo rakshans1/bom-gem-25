@@ -610,13 +610,8 @@ Note: This comparison helps you choose the right abstraction level. Start simple
 <div class="container">
 <h2>Fault Tolerance 🛡️</h2>
 
-<ul>
-<li class="fragment" data-fragment-index="1"><strong>The "Let It Crash" Philosophy</strong> - Embrace failures and recover gracefully</li>
-<li class="fragment" data-fragment-index="2"><strong>Supervision Trees</strong> - Supervisors monitor child processes and restart them when they crash</li>
-<li class="fragment" data-fragment-index="3"><strong>Error Propagation Strategy</strong> - Errors bubble up the supervision tree</li>
-<li class="fragment" data-fragment-index="4"><strong>Restart Strategy</strong> - <code>:one_for_one</code>, <code>:one_for_all</code>, and <code>:rest_for_one</code></li>
-<li class="fragment" data-fragment-index="5"><strong>Restart Type</strong> - <code>:permanent</code>, <code>:temporary</code>, and <code>:transient</code></li>
-</ul>
+<strong>The "Let It Crash" Philosophy</strong> - Embrace failures and recover gracefully
+
 </div>
 
 Note: The "Let It Crash" Philosophy. Each level decides how to handle failures. System stays running even with component failures. Self-healing - processes restart with clean state. It's a fundamentally different way of building robust systems.
@@ -624,6 +619,100 @@ Note: The "Let It Crash" Philosophy. Each level decides how to handle failures. 
 --
 
 <!-- Slide 2.14 -->
+
+<div class="container">
+<h2>Supervisor 👨‍💼</h2>
+
+<strong>Supervisors are special processes that monitor other processes (called children) and restart them when they crash.</strong>
+
+<div class="fragment" data-fragment-index="1"><strong>Monitor</strong> - Watch child processes for failures</div>
+<div class="fragment" data-fragment-index="2"><strong>Restart</strong> - Automatically restart crashed processes</div>
+<div class="fragment" data-fragment-index="3"><strong>Manage</strong> - Start and stop child processes</div>
+<div class="fragment" data-fragment-index="4"><strong>Apply Strategy</strong> - Decide how to handle failures</div>
+
+</div>
+
+Note: A supervisor is a process that monitors other processes (its children) and restarts them if they crash. This is the foundation of building fault-tolerant systems.
+
+--
+
+<!-- Slide 2.17 -->
+
+<div class="container">
+<h2>Supervision Trees 🌳</h2>
+
+<strong>Supervisor trees create a hierarchy where supervisors can supervise other supervisors, creating a fault-tolerant system structure.</strong>
+
+<div class="fragment" data-fragment-index="1"><strong>Error Propagation Strategy</strong> - Errors bubble up the supervision tree</div>
+<div class="fragment" data-fragment-index="2"><strong>Restart Strategy</strong> - <code>:one_for_one</code>, <code>:one_for_all</code>, and <code>:rest_for_one</code></div>
+<div class="fragment" data-fragment-index="3"><strong>Restart Type</strong> - <code>:permanent</code>, <code>:temporary</code>, and <code>:transient</code></div>
+
+</div>
+
+Note: Supervisors are the backbone of OTP's fault tolerance. They monitor child processes and restart them according to configured strategies when failures occur.
+
+--
+
+<!-- Slide 2.17a -->
+
+<div class="container">
+<div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true }}}%%
+graph TD
+    Phoenix["Application"]
+
+    Phoenix --> Endpoint["Web"]
+    Phoenix --> Services["Services"]
+
+    Endpoint --> CowboySup["HTTP"]
+    CowboySup --> Ranch1["Listener 1"]
+    Ranch1 --> Conn1["Connection 1"]
+    Ranch1 --> Conn2["Connection 2"]
+
+    Services --> Ecto["Database"]
+    Ecto --> Pool["Connection Pool"]
+    Pool --> DBConn1["DB Connection 1"]
+    Pool --> DBConn2["DB Connection 2"]
+
+    Services --> PubSub["Cache"]
+    PubSub --> LocalCache["Local Cache"]
+    PubSub --> Registry["Process Registry"]
+    Registry --> CacheWorker1["Cache Worker 1"]
+    Registry --> CacheWorker2["Cache Worker 2"]
+
+    Services --> TaskSup["Tasks"]
+    TaskSup --> BgTasks["Background Tasks"]
+    BgTasks --> EmailTask["Email Task"]
+    BgTasks --> ReportTask["Report Task"]
+
+    style Phoenix fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000,font-size:20px,padding:25px
+    style Endpoint fill:#f3e5f5,stroke:#4a148c,stroke-width:3px,color:#000,font-size:20px,padding:25px
+    style Services fill:#e8f5e8,stroke:#1b5e20,stroke-width:3px,color:#000,font-size:20px,padding:25px
+    style Ecto fill:#fff3e0,stroke:#e65100,stroke-width:3px,color:#000,font-size:20px,padding:25px
+    style PubSub fill:#ffebee,stroke:#b71c1c,stroke-width:3px,color:#000,font-size:20px,padding:25px
+    style TaskSup fill:#f1f8e9,stroke:#33691e,stroke-width:3px,color:#000,font-size:20px,padding:25px
+    style CowboySup fill:#fff8e1,stroke:#ff8f00,stroke-width:3px,color:#000,font-size:20px,padding:25px
+    style Pool fill:#e3f2fd,stroke:#0277bd,stroke-width:3px,color:#000,font-size:20px,padding:25px
+
+</div>
+<style>
+.mermaid {
+    margin-top: 20px;
+}
+.mermaid svg {
+    width: 1200px !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+</style>
+
+</div>
+
+Note: This shows a typical Phoenix application supervision tree. Each supervisor uses different restart strategies based on their role - web servers use :one_for_one, databases use :one_for_all for consistency, and task supervisors use :simple_one_for_one for dynamic children.
+
+--
+
+<!-- Slide 2.18 -->
 <!-- .slide: class="fullscreen" -->
 <iframe data-src="/demo/fault-tolerance"
         data-lazy
@@ -637,7 +726,7 @@ Note: The "Let It Crash" Philosophy. Each level decides how to handle failures. 
 
 --
 
-<!-- Slide 2.15 -->
+<!-- Slide 2.19 -->
 
 <div class="container">
 <h2>Built-in Distribution 🌐</h2>
