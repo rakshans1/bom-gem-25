@@ -21,7 +21,10 @@ Note: Welcome everyone. I'm here to sell you on Elixir and convince you to learn
 <div class="container">
 <h2>Hi, I'm Rakshan Shetty</h2>
 
-**Software Engineer @ invideo**
+<div style="display: flex; align-items: center; gap: 1rem;">
+Software Engineer @ invideo
+<img src="/images/invideo.png" alt="InVideo Logo" style="height: 1em;">
+</div>
 
 </div>
 
@@ -847,7 +850,10 @@ Note: There's a clear pattern here - companies choose Elixir when they need to h
 <!-- Slide 3.7 -->
 
 <div class="container">
+<div style="display: flex; align-items: baseline; gap: 1rem;">
 <h2>invideo</h2>
+<img src="/images/invideo.png" alt="InVideo Logo" style="height: 1.2em;">
+</div>
 
 <ul>
 <li><strong>~3 videos/second</strong></li>
