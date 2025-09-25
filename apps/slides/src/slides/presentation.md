@@ -862,7 +862,7 @@ Note: There's a clear pattern here - companies choose Elixir when they need to h
 </ul>
 </div>
 
---
+---
 
 <!-- Slide 4 -->
 

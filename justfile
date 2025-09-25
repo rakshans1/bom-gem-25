@@ -229,7 +229,7 @@ fix-lint:
 
 
 iex:
-    ttyd --port 9056 -t 'theme={"background":"#161821"}' -t 'fontSize=24' -W iex
+    ttyd --port 9056 -t 'theme={"background":"#161821"}' -t 'fontSize=24' -W iex -S mix
 
 fly:
     ttyd --port 9057 -t 'theme={"background":"#161821"}' -t 'fontSize=24' -W fly ssh console
