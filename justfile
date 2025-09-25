@@ -196,11 +196,7 @@ check-lint:
 
 check-types:
     @echo "🔍 Checking types..."
-    @if [ "${CI:-}" = "true" ]; then \
-        echo "Skipping dialyzer in CI due to Nix Erlang packaging issue"; \
-    else \
-        mix dialyzer; \
-    fi
+    @mix dialyzer
     @cd apps/slides && pnpm exec tsc --noEmit
 
 check-types-fast:
