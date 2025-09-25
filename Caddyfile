@@ -5,3 +5,11 @@ bom-gem.localhost {
 lb-bom-gem.localhost {
 	reverse_proxy :9054
 }
+
+iex-bom-gem.localhost {
+	reverse_proxy :9056
+}
+
+fly-bom-gem.localhost {
+	reverse_proxy :9057
+}
