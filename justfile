@@ -129,6 +129,7 @@ livebook:
     export LIVEBOOK_TOKEN_ENABLED=false
     export LIVEBOOK_COOKIE="$APP_NAME"
     export LIVEBOOK_DEFAULT_RUNTIME="attached:$APP_NAME@$(hostname):$APP_NAME"
+    export LIVEBOOK_WITHIN_IFRAME=true
     export LIVEBOOK_IFRAME_PORT=9055
 
     if [[ $(uname) == "Darwin" ]] && [[ $(uname -m) == 'arm64' ]]; then
@@ -225,6 +226,14 @@ fix-lint:
     @echo "🔍 Fixing linting..."
     @mix credo --strict --fix 2>/dev/null || true
     @biome lint --write --unsafe assets/js/ assets/vendor/ apps/ || echo "Note: Some Tailwind CSS v4 syntax not yet supported by Biome"
+
+
+iex:
+    ttyd --port 9056 -t 'theme={"background":"#161821"}' -t 'fontSize=24' -W iex
+
+fly:
+    ttyd --port 9057 -t 'theme={"background":"#161821"}' -t 'fontSize=24' -W fly ssh console
+
 
 # =============================================================================
 # PRIVATE HELPERS (prefix with underscore)

@@ -48,3 +48,5 @@ npm-debug.log
 # dialyzer
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
+.livebook
+.turbo

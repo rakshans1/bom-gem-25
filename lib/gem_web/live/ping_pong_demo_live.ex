@@ -23,9 +23,11 @@ defmodule GemWeb.PingPongDemoLive do
       |> assign(:speed, default_speed)
       |> assign(:simulation_pid, nil)
       |> assign(:animation_timer_ref, nil)
+      |> assign(:paused_at, nil)
 
     socket =
       if connected?(socket) do
+        :ok = Phoenix.PubSub.subscribe(Gem.PubSub, Gem.Demo.pubsub_topic())
         start_demo(socket)
       else
         socket
@@ -49,7 +51,8 @@ defmodule GemWeb.PingPongDemoLive do
      |> assign(:status, :idle)
      |> assign(:messages, [])
      |> assign(:message_positions, [])
-     |> assign(:simulation_pid, nil)}
+     |> assign(:simulation_pid, nil)
+     |> assign(:paused_at, nil)}
   end
 
   defp start_demo(socket) do
@@ -66,6 +69,7 @@ defmodule GemWeb.PingPongDemoLive do
       |> assign(:message_positions, [])
       |> assign(:status, :running)
       |> assign(:message_count, 0)
+      |> assign(:paused_at, nil)
 
     simulation_pid = start_ping_pong_simulation(processes, topology, speed)
 
@@ -84,9 +88,6 @@ defmodule GemWeb.PingPongDemoLive do
 
     messages = Enum.take([message | socket.assigns.messages], 50)
 
-    # Remove message after animation
-    Process.send_after(self(), {:remove_message, message.id}, @message_lifespan_ms)
-
     {:noreply,
      socket
      |> assign(:messages, messages)
@@ -100,27 +101,85 @@ defmodule GemWeb.PingPongDemoLive do
   end
 
   @impl true
+  def handle_info({:remove_message, _message_id}, %{assigns: %{status: status}} = socket) when status != :running do
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_info({:remove_message, message_id}, socket) do
     messages = Enum.reject(socket.assigns.messages, &(&1.id == message_id))
 
-    {:noreply,
-     socket
-     |> assign(:messages, messages)
-     |> update_message_positions()
-     |> maybe_schedule_animation_tick()}
+    socket =
+      socket
+      |> assign(:messages, messages)
+      |> update_message_positions()
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:demo_control, :pause}, %{assigns: %{status: :running}} = socket) do
+    now = System.monotonic_time(:millisecond)
+
+    socket =
+      socket
+      |> update_message_positions(now)
+      |> cancel_animation_tick()
+      |> assign(:status, :paused)
+      |> assign(:paused_at, now)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:demo_control, :pause}, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:demo_control, :play}, %{assigns: %{status: :paused, paused_at: paused_at}} = socket) do
+    now = System.monotonic_time(:millisecond)
+    pause_duration = max(now - (paused_at || now), 0)
+
+    messages =
+      if pause_duration > 0 do
+        Enum.map(socket.assigns.messages, fn message ->
+          %{message | timestamp: message.timestamp + pause_duration}
+        end)
+      else
+        socket.assigns.messages
+      end
+
+    socket =
+      socket
+      |> assign(:messages, messages)
+      |> assign(:status, :running)
+      |> assign(:paused_at, nil)
+      |> update_message_positions()
+      |> maybe_schedule_animation_tick()
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:demo_control, :play}, socket) do
+    {:noreply, socket}
   end
 
   @impl true
   def handle_info(:animation_tick, socket) do
-    socket =
-      socket
-      |> assign(:animation_timer_ref, nil)
-      |> update_message_positions()
+    socket = assign(socket, :animation_timer_ref, nil)
 
-    if socket.assigns.status == :running and socket.assigns.messages != [] do
-      {:noreply, maybe_schedule_animation_tick(socket)}
-    else
-      {:noreply, socket}
+    cond do
+      socket.assigns.status != :running ->
+        {:noreply, socket}
+
+      socket.assigns.messages == [] ->
+        {:noreply, socket}
+
+      true ->
+        socket = update_message_positions(socket)
+        {:noreply, maybe_schedule_animation_tick(socket)}
     end
   end
 
@@ -253,21 +312,29 @@ defmodule GemWeb.PingPongDemoLive do
   defp message_interval(speed) when is_integer(speed) and speed > 0, do: speed
   defp message_interval(_), do: 500
 
-  defp message_positions(messages, processes) do
+  defp message_positions(messages, processes, now) do
     messages
     |> Enum.sort_by(& &1.timestamp, :asc)
     |> Enum.map(fn message ->
-      {message, calculate_message_position(message, processes)}
+      {message, calculate_message_position(message, processes, now)}
     end)
   end
 
-  defp update_message_positions(socket) do
-    positions = message_positions(socket.assigns.messages, socket.assigns.processes)
-    assign(socket, :message_positions, positions)
+  defp update_message_positions(socket, now \\ nil) do
+    now = now || current_time(socket)
+    messages = prune_expired_messages(socket.assigns.messages, now)
+
+    socket
+    |> assign(:messages, messages)
+    |> assign(:message_positions, message_positions(messages, socket.assigns.processes, now))
   end
 
   defp animation_frame_seconds do
     Float.round(@animation_tick_interval / 1000, 3)
+  end
+
+  defp maybe_schedule_animation_tick(%{assigns: %{status: status}} = socket) when status != :running do
+    socket
   end
 
   defp maybe_schedule_animation_tick(socket) do
@@ -282,6 +349,20 @@ defmodule GemWeb.PingPongDemoLive do
         ref = Process.send_after(self(), :animation_tick, @animation_tick_interval)
         assign(socket, :animation_timer_ref, ref)
     end
+  end
+
+  defp current_time(%{assigns: %{status: :paused, paused_at: paused_at}}) when is_integer(paused_at) do
+    paused_at
+  end
+
+  defp current_time(_socket) do
+    System.monotonic_time(:millisecond)
+  end
+
+  defp prune_expired_messages(messages, now) do
+    Enum.reject(messages, fn message ->
+      max(now - message.timestamp, 0) > @message_lifespan_ms
+    end)
   end
 
   defp cancel_animation_tick(socket) do
@@ -409,14 +490,13 @@ defmodule GemWeb.PingPongDemoLive do
     :ok
   end
 
-  defp calculate_message_position(message, processes) do
+  defp calculate_message_position(message, processes, now) do
     from_process = get_process_by_id(processes, message.from)
     to_process = get_process_by_id(processes, message.to)
 
     if from_process && to_process do
       # Calculate progress based on timestamp (simulate 2-second travel time)
-      now = System.monotonic_time(:millisecond)
-      elapsed = now - message.timestamp
+      elapsed = max(now - message.timestamp, 0)
       progress = min(1.0, elapsed / @message_animation_duration_ms)
 
       # Interpolate position

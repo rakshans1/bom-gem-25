@@ -363,7 +363,6 @@ Note: This shows the basic skeleton of an Elixir process - every process follows
 <li class="fragment" data-fragment-index="1"><strong>OTP Behavior</strong> - Standardized server pattern</li>
 <li class="fragment" data-fragment-index="2"><strong>State Management</strong> - Maintains state between calls</li>
 <li class="fragment" data-fragment-index="3"><strong>Synchronous & Asynchronous</strong> - call/cast operations</li>
-<li class="fragment" data-fragment-index="4"><strong>Supervision Ready</strong> - Integrates with supervision trees</li>
 </ul>
 </div>
 
@@ -742,3 +741,264 @@ send({:worker, :"app@server2.com"}, {:process_data, data})
 </div>
 
 Note: Distribution isn't an afterthought - it's built into the language. The same message passing that works locally works across the network.
+
+---
+
+<!-- Slide 3 -->
+
+<div class="container">
+<h2>Real-World Success Stories</h2>
+
+**Companies betting big on Elixir and winning**
+
+</div>
+
+Note: Now let's look at real companies that have bet on Elixir and seen incredible results. These aren't just tech experiments - these are production systems handling millions of users.
+
+--
+
+<!-- Slide 3.1 -->
+
+<div class="container">
+<h2>WhatsApp 📱</h2>
+
+<ul>
+<li><strong>2 billion users</strong> worldwide</li>
+<li><strong>50 engineers</strong> handling the entire backend</li>
+<li><strong>Built on Erlang/OTP</strong></li>
+</ul>
+</div>
+
+Note: WhatsApp is the poster child for Erlang/OTP success. 2 billion users with just 50 engineers - that's 40 million users per engineer! This level of efficiency is possible because of the fault-tolerant, concurrent nature of the platform.
+
+--
+
+<!-- Slide 3.2 -->
+
+<div class="container">
+<h2>Discord 🎮</h2>
+
+<ul>
+<li><strong>150+ million monthly users</strong></li>
+<li><strong>Elixir</strong> for their real-time messaging</li>
+<li><strong>11 million concurrent users</strong> handled simultaneously</li>
+<li><strong>Soft real-time performance</strong> - sub-millisecond message delivery</li>
+</ul>
+</div>
+
+Note: Discord made headlines when they migrated from Go to Elixir for their real-time messaging system. With 11 million concurrent users, they needed something that could handle massive concurrent connections with low latency - exactly what Elixir was designed for.
+
+--
+
+<!-- Slide 3.3 -->
+
+<!-- Slide 3.4 -->
+
+<div class="container">
+<h2>Pinterest 📌</h2>
+
+<ul>
+<li><strong>400+ million monthly users</strong></li>
+<li><strong>Notification system</strong> built with Elixir</li>
+<li><strong>Billions of notifications</strong> processed daily</li>
+<li><strong>99.9% uptime</strong> with automatic failover</li>
+</ul>
+</div>
+
+Note: Pinterest chose Elixir for their notification system because they needed something that could handle massive scale while maintaining reliability. The fault-tolerance features ensure users never miss important notifications.
+
+--
+
+<!-- Slide 3.5 -->
+
+<div class="container">
+<h2>Spotify 🎵</h2>
+
+<ul>
+<li><strong>400+ million users</strong></li>
+<li><strong>Chat system</strong> powered by Erlang/Elixir</li>
+<li><strong>Real-time music collaboration</strong></li>
+<li><strong>Handles millions</strong> of concurrent connections</li>
+</ul>
+</div>
+
+Note: Spotify uses Elixir for their chat and real-time collaboration features. When users collaborate on playlists or chat about music, that's powered by the same technology stack we're discussing.
+
+--
+
+<!-- Slide 3.6 -->
+
+<div class="container">
+
+**What do all these companies have in common?**
+
+<ul>
+<li><strong>High concurrency needs</strong> - millions of simultaneous users</li>
+<li><strong>Real-time requirements</strong> - messages, notifications, updates</li>
+<li><strong>Reliability demands</strong> - downtime costs money and reputation</li>
+<li><strong>Cost efficiency</strong> - doing more with fewer resources</li>
+</ul>
+</div>
+
+Note: There's a clear pattern here - companies choose Elixir when they need to handle massive scale, real-time interactions, and can't afford downtime. These are exactly the problems Elixir was designed to solve.
+
+--
+
+<!-- Slide 3.7 -->
+
+<div class="container">
+<h2>invideo</h2>
+
+<ul>
+<li><strong>~3 videos/second</strong></li>
+<li><strong>Real-time updates</strong></li>
+<li><strong>Very Long running session</strong></li>
+</ul>
+</div>
+
+--
+
+<!-- Slide 4 -->
+
+<div class="container">
+<h2>Developer Tools 🛠️</h2>
+
+**IEx - Interactive Elixir Shell**
+
+<ul>
+<li><strong>Live experimentation</strong> - Test code interactively in real-time</li>
+<li><strong>Runtime introspection</strong> - Inspect running processes and system state</li>
+<li><strong>Hot code reloading</strong> - Update code without stopping the system</li>
+</ul>
+</div>
+
+Note: IEx isn't just a REPL - it's a powerful development and debugging tool that lets you interact with live systems, inspect processes, and even connect to production systems for debugging.
+
+--
+
+<!-- Slide 4.1 -->
+<div class="container">
+<iframe data-src="https://iex-bom-gem.localhost"
+        data-lazy
+        width="100%"
+        height="1080px"
+        frameborder="0"
+        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
+</iframe>
+</div>
+
+--
+
+<div style="display: flex; gap: 2rem; flex-direction: row;">
+<div style="flex: 1;">
+<iframe data-src="https://fly-bom-gem.localhost"
+        data-lazy
+        width="100%"
+        height="1080px"
+        frameborder="0"
+        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
+</iframe>
+</div>
+<div style="flex: 1;">
+<iframe data-src="/demo/ping-pong"
+        data-lazy
+        width="100%"
+        height="1080px"
+        frameborder="0"
+        style="border-radius: 8px; background: #161821; border: 1px solid #1e2132;">
+</iframe>
+</div>
+</div>
+
+---
+
+<!-- Slide 5 -->
+
+<div class="container">
+<h2>Ecosystem Overview 🌟</h2>
+
+**Rich ecosystem of battle-tested libraries**
+
+</div>
+
+Note: Elixir has a mature ecosystem with libraries that leverage the platform's strengths. Let's look at some key libraries that make development productive and enjoyable.
+
+--
+
+<!-- Slide 5.1 -->
+
+<div class="container">
+<h2>Phoenix 🔥</h2>
+
+<ul>
+<li><strong>Most loved web framework</strong> - Stack Overflow Developer Survey</li>
+<li><strong>Full-featured</strong> - Productive web development out of the box</li>
+<li><strong>Real-time by default</strong> - WebSockets, channels, presence</li>
+<li><strong>Developer experience</strong> - Hot reloading, code reloading</li>
+<li><strong>Scalable</strong> - Handles millions of connections</li>
+</ul>
+</div>
+
+--
+
+<!-- Slide 5.2 -->
+
+<div class="container">
+<h2>LiveView ⚡</h2>
+
+<ul>
+<li><strong>Real-time UIs without JavaScript</strong> - Server-rendered, client-updated</li>
+<li><strong>Interactive</strong> - Handle user events seamlessly</li>
+<li><strong>Efficient</strong> - Only sends HTML diffs over WebSocket</li>
+<li><strong>Simple</strong> - Write Elixir, get rich interactions</li>
+</ul>
+</div>
+
+--
+
+<!-- Slide 5.3 -->
+
+<div class="container">
+<h2>Ecto 🗄️</h2>
+
+<ul>
+<li><strong>Database wrapper</strong> - Query builder and schema mapper</li>
+<li><strong>Migrations</strong> - Version your database schema</li>
+<li><strong>Changesets</strong> - Data validation and casting</li>
+<li><strong>Multi-database</strong> - PostgreSQL, MySQL, SQLite support</li>
+</ul>
+</div>
+
+--
+
+<!-- Slide 5.4 -->
+
+<div class="container">
+<h2>Libraries</h2>
+
+<ul>
+<li><strong>Broadway</strong> - Data processing pipelines</li>
+<li><strong>Oban</strong> - Background job processing</li>
+<li><strong>Nx</strong> - Numerical computing & machine learning</li>
+<li><strong>Bumblebee</strong> - Pre-trained ML models</li>
+<li><strong>Req</strong> - HTTP client with superpowers</li>
+<li><strong>ExUnit</strong> - Built-in testing framework</li>
+<li><strong>Nerves</strong> - Embedded systems platform</li>
+</ul>
+</div>
+
+---
+
+<!-- Slide 6 -->
+
+<div class="container">
+<h2>Thank You! 🚀</h2>
+
+<div style="margin-top: 3rem; display: flex; align-items: center; gap: 1rem;">
+<p>Slides:</p>
+<a href="https://bom-gem.fly.dev/slides" target="_blank" style="font-size: 0.8em;">https://bom-gem.fly.dev/slides</a>
+</div>
+
+</div>
+
+Note: Thank you for your attention! I hope I've convinced you that Elixir is worth betting on. The slides are available online for reference, and I'm happy to answer any questions about getting started with Elixir.

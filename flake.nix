@@ -38,6 +38,7 @@
             fswatch
             entr
             markdownlint-cli2
+            ttyd
           ]
         else [];
       all = common ++ dev;
