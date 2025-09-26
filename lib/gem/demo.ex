@@ -25,6 +25,15 @@ defmodule Gem.Demo do
   @spec play() :: :ok
   def play, do: broadcast(:play)
 
+  def print do
+    IO.puts("""
+    ▗▄▄▖  ▗▄▖ ▗▖  ▗▖▗▄▄▖  ▗▄▖▗▖  ▗▖     ▗▄▄▖▗▄▄▄▖▗▖  ▗▖
+    ▐▌ ▐▌▐▌ ▐▌▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▝▚▞▘     ▐▌   ▐▌   ▐▛▚▞▜▌
+    ▐▛▀▚▖▐▌ ▐▌▐▌  ▐▌▐▛▀▚▖▐▛▀▜▌ ▐▌      ▐▌▝▜▌▐▛▀▀▘▐▌  ▐▌
+    ▐▙▄▞▘▝▚▄▞▘▐▌  ▐▌▐▙▄▞▘▐▌ ▐▌ ▐▌      ▝▚▄▞▘▐▙▄▄▖▐▌  ▐▌
+    """)
+  end
+
   defp broadcast(action) when action in [:pause, :play] do
     Phoenix.PubSub.broadcast(Gem.PubSub, @topic, {:demo_control, action})
   end
