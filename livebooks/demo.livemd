@@ -1,0 +1,50 @@
+# Demo
+
+## Section
+
+```elixir
+name_input = Kino.Input.text("Enter your name")
+```
+
+```elixir
+name = Kino.Input.read(name_input)
+```
+
+```elixir
+Kino.Markdown.new("""
+## Hello
+
+**#{name}**
+
+""")
+
+```
+
+```elixir
+data = 
+  1..50
+  |> Enum.map(fn x ->
+    %{
+      x: x,
+      y: :math.sin(x / 5) * 10 + :rand.uniform() * 5,
+      category: if(rem(x, 2) == 0, do: "Even", else: "Odd")
+    }
+  end)
+
+# Create an interactive chart
+VegaLite.new(width: 600, height: 400)
+|> VegaLite.data_from_values(data)
+|> VegaLite.mark(:circle, size: 100, opacity: 0.7)
+|> VegaLite.encode_field(:x, "x", type: :quantitative, title: "X Values")
+|> VegaLite.encode_field(:y, "y", type: :quantitative, title: "Y Values")
+|> VegaLite.encode_field(:color, "category", type: :nominal, title: "Category")
+|> VegaLite.resolve(:scale, color: :independent)
+```
+
+```elixir
+Kino.Process.render_sup_tree(Gem.PubSub, direction: :top_down)
+```
+
+```elixir
+:gem
+```

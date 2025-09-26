@@ -102,7 +102,12 @@ defmodule Gem.MixProject do
       # Linting
       {:credo, "~> 1.7.12", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:styler, "~> 1.8", only: [:dev, :test], runtime: false}
+      {:styler, "~> 1.8", only: [:dev, :test], runtime: false},
+
+      # Livebook
+      {:kino, "~> 0.17.0", only: :dev},
+      {:vega_lite, "~> 0.1.11", only: :dev},
+      {:kino_vega_lite, "~> 0.1.13", only: :dev}
     ]
   end
 
