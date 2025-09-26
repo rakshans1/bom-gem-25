@@ -1002,7 +1002,7 @@ Note: Elixir has a mature ecosystem with libraries that leverage the platform's 
 
 <div style="margin-top: 3rem; display: flex; align-items: center; gap: 1rem;">
 <p>Slides:</p>
-<a href="https://bom-gem.fly.dev/slides" target="_blank" style="font-size: 0.8em;">https://bom-gem.fly.dev/slides</a>
+<img src="/images/qr.png" alt="QR Code for slides" style="height: 150px;">
 </div>
 
 </div>

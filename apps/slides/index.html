@@ -1,22 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slides</title>
-    <link rel="stylesheet" href="/node_modules/reveal.js/dist/reveal.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bet on Elixir - Why Elixir should be your next language</title>
+    <link rel="stylesheet" href="/node_modules/reveal.js/dist/reveal.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-9NPSJFJHEQ"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-9NPSJFJHEQ");
+    </script>
+  </head>
+  <body>
     <div class="reveal">
-        <div class="slides">
-            <section data-markdown="/slides/presentation.md"
-                     data-separator="^---"
-                     data-separator-vertical="^--"
-                     data-separator-notes="^Note:"
-                     data-charset="utf-8">
-            </section>
-        </div>
+      <div class="slides">
+        <section
+          data-markdown="/slides/presentation.md"
+          data-separator="^---"
+          data-separator-vertical="^--"
+          data-separator-notes="^Note:"
+          data-charset="utf-8"
+        ></section>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
-</body>
+  </body>
 </html>
+

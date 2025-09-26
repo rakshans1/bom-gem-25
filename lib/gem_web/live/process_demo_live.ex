@@ -7,6 +7,7 @@ defmodule GemWeb.ProcessDemoLive do
 
     {:ok,
      socket
+     |> assign(:page_title, "Process Spawning Demo")
      |> assign(:process_count, 0)
      |> assign(:status, :idle)
      |> assign(:execution_time, nil)

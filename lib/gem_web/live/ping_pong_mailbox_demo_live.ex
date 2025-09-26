@@ -17,6 +17,7 @@ defmodule GemWeb.PingPongMailboxDemoLive do
 
     socket =
       socket
+      |> assign(:page_title, "Mailbox & Message Passing Demo")
       |> assign(:session_ref, session_ref)
       |> assign(:tree_pid, nil)
       |> assign(:processes, initial_processes())

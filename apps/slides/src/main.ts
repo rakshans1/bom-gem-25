@@ -13,6 +13,7 @@ const config: Options = {
 	width: 1920,
 	height: 1080,
 	hash: true,
+	hashOneBasedIndex: true,
 	controls: false,
 	controlsLayout: "edges",
 	progress: true,

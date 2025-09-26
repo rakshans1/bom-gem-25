@@ -14,6 +14,7 @@ defmodule GemWeb.PingPongDemoLive do
 
     socket =
       socket
+      |> assign(:page_title, "Process Communication Demo")
       |> assign(:processes, processes)
       |> assign(:messages, [])
       |> assign(:message_positions, [])

@@ -41,6 +41,7 @@ defmodule GemWeb.FaultToleranceDemoLive do
 
     socket =
       socket
+      |> assign(:page_title, "Fault Tolerance & Supervision Demo")
       |> assign(:session_ref, session_ref)
       |> assign(:control_data, control_data)
       |> assign(:control_form, to_form(control_data, as: :controls))
