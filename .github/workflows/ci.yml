@@ -120,6 +120,9 @@ jobs:
           path: |
             priv/plts
 
+      - name: Install pnpm dependencies
+        run: nix develop -c pnpm install
+
       - name: Run credo & dialyzer
         run: |
           nix develop -c mix local.rebar --force
